@@ -782,32 +782,49 @@ generateBtn.addEventListener('click', async function () {
   loadingBox.classList.add('show');
 
   try {
-    if (platform === 'youtube' && ytFmt === 'mp4' && qualityNeedsMerge(url, ytQuality)) {
-      // Tunay na resolution: i-merge sa server (video + audio), at
-      // diretso ang file mismo ang babalik — walang googlevideo link
-      // dito kasi hiwalay ang DASH streams ng YouTube.
-      loadingText.textContent = 'Mino-merge ang ' + ytQuality + '… medyo matatagal (mga 30–60 segundo).';
+    // v1.2: Facebook din — ang 'best' ng FB ay 720p lang pala (ang
+    // 1080p ay hiwalay na video+audio), kaya i-merge din para makuha
+    // ang tunay na resolution. Pag nag-fail ang merge ng FB, balik
+    // sa direktang link (yun pa rin ang dating behavior).
+    var fbQuality = selectedQuality();
+    var mergeQuality = platform === 'youtube' ? ytQuality : fbQuality;
+    var needsMerge = (platform === 'youtube' && ytFmt === 'mp4' && qualityNeedsMerge(url, ytQuality)) ||
+      (platform === 'facebook' && fbQuality !== 'mp3' && fbQuality !== 'worst' && qualityNeedsMerge(url, fbQuality));
+    var mergedOk = false;
+    if (needsMerge) {
+      loadingText.textContent = 'Mino-merge ang ' + mergeQuality + '… medyo matatagal (mga 30–60 segundo).';
       var mRes = await fetch(FB_BACKEND + '/api/download-merged', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url, quality: ytQuality })
+        body: JSON.stringify({ url: url, quality: mergeQuality })
       });
       var mType = mRes.headers.get('content-type') || '';
       if (mType.indexOf('application/json') !== -1) {
         var mData = await mRes.json().catch(function () { return {}; });
         if (!mRes.ok || mData.error || mData.detail) {
-          showError(mData.error || mData.detail || 'Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
-          return;
-        }
-        if (mData.download_url) {
+          if (platform === 'youtube') {
+            showError(mData.error || mData.detail || 'Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
+            return;
+          }
+          // Facebook: hindi na-merge — balik sa direktang link sa baba.
+        } else if (mData.download_url) {
           // Fallback: single-file link lang ang kaya (hal. bot-blocked)
-          // — diretso pa rin sa normal na MP4 result.
-          var mTitle = (mData.video_info && mData.video_info.title) || 'YouTube Video';
-          renderYoutube({
-            platform: 'youtube', format: 'mp4', title: mTitle, downloadUrl: mData.download_url,
-            filename: (mTitle.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4'
-          }, url);
-        } else {
+          // — diretso pa rin sa normal na result.
+          var mTitle = ((formatsCache[url] && formatsCache[url].title) || '') ||
+            (mData.video_info && mData.video_info.title) || (platform === 'facebook' ? 'Facebook Video' : 'YouTube Video');
+          if (platform === 'facebook') {
+            renderFacebook({
+              platform: 'facebook', status: 'success', download_url: mData.download_url,
+              video_info: mData.video_info || { title: mTitle }
+            });
+          } else {
+            renderYoutube({
+              platform: 'youtube', format: 'mp4', title: mTitle, downloadUrl: mData.download_url,
+              filename: (mTitle.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4'
+            }, url);
+          }
+          mergedOk = true;
+        } else if (platform === 'youtube') {
           showError('Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
           return;
         }
@@ -821,16 +838,26 @@ generateBtn.addEventListener('click', async function () {
         var fname = mTitle2
             ? ((mTitle2.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4')
           : (m ? m[1] : 'video.mp4');
-        renderYoutube({
-          platform: 'youtube', format: 'mp4',
-          title: mTitle2 || fname.replace(/\.mp4$/i, ''),
-          downloadUrl: blobUrl, filename: fname, direct: true
-        }, url);
-      } else {
+        if (platform === 'facebook') {
+          renderFacebook({
+            platform: 'facebook', status: 'success', download_url: blobUrl,
+            video_info: { title: mTitle2 || 'Facebook Video' }, direct: true
+          });
+        } else {
+          renderYoutube({
+            platform: 'youtube', format: 'mp4',
+            title: mTitle2 || fname.replace(/\.mp4$/i, ''),
+            downloadUrl: blobUrl, filename: fname, direct: true
+          }, url);
+        }
+        mergedOk = true;
+      } else if (platform === 'youtube') {
         showError('Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
         return;
       }
-    } else {
+      // Pag FB at nag-fail ang merge, mergedOk = false → diretso sa baba.
+    }
+    if (!mergedOk) {
       var res = await fetch('/api/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -849,6 +876,7 @@ generateBtn.addEventListener('click', async function () {
       if (platform === 'youtube') renderYoutube(data, url);
       else if (platform === 'tiktok') renderTiktok(data);
       else renderFacebook(data);
+      if (needsMerge && !mergedOk && platform === 'facebook') toast('Hindi na-merge sa server — direktang link na lang ang nakuha (mas mababang quality).');
     }
 
     loadingBox.classList.remove('show');
@@ -935,7 +963,7 @@ function renderTiktok(data) {
   var stamp = Date.now();
   if (type === 'video' && hasVideo) {
     video.style.display = 'block';
-    video.src = item.play || item.hdplay || '';
+    video.src = item.hdplay || item.play || '';
     video.poster = item.cover || '';
     video.load();
     videoBtns.style.display = 'grid';
@@ -963,10 +991,10 @@ function renderTiktok(data) {
       if (url) downloadViaBlob(url, filename, btn);
     };
   }
-  wireBlob(document.getElementById('ttNoWm'), item.play || item.hdplay || '', 'tiktok_nowm_' + stamp + '.mp4');
+  wireBlob(document.getElementById('ttNoWm'), item.hdplay || item.play || '', 'tiktok_nowm_' + stamp + '.mp4');
   wireBlob(document.getElementById('ttHd'), item.hdplay || item.play || '', 'tiktok_hd_' + stamp + '.mp4');
   wireBlob(document.getElementById('ttWm'), item.wmplay || '', 'tiktok_wm_' + stamp + '.mp4');
-  wireBlob(slideshowBtn, item.play || item.hdplay || '', 'tiktok_slideshow_' + stamp + '.mp4');
+  wireBlob(slideshowBtn, item.hdplay || item.play || '', 'tiktok_slideshow_' + stamp + '.mp4');
   document.getElementById('ttWm').style.display = item.wmplay ? '' : 'none';
   // Slideshow button: photo post lang na may video.
   slideshowBtn.style.display = (type !== 'video' && hasVideo) ? '' : 'none';
@@ -1036,9 +1064,11 @@ function renderTiktok(data) {
 }
 
 var fbDownloadUrl = '';
+var fbDirect = false;
 function renderFacebook(data) {
   var info = data.video_info || {};
   fbDownloadUrl = data.download_url || '';
+  fbDirect = !!data.direct;
   var thumb = document.getElementById('fbThumb');
   thumb.src = info.thumbnail || '';
   thumb.style.display = info.thumbnail ? 'block' : 'none';
@@ -1057,6 +1087,16 @@ document.getElementById('fbDownloadBtn').addEventListener('click', function () {
   var quality = selectedQuality();
   var ext = quality === 'mp3' ? 'mp3' : 'mp4';
   var title = document.getElementById('fbTitle').textContent || 'video';
+  if (fbDirect) {
+    // Merged file na — blob URL mismo, diretso ang download.
+    var a = document.createElement('a');
+    a.href = fbDownloadUrl;
+    a.download = safeFileName(title, ext);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return;
+  }
   var proxyUrl = '/api/proxy-download?url=' + encodeURIComponent(fbDownloadUrl) +
     '&filename=' + encodeURIComponent(safeFileName(title, ext));
   window.location.href = proxyUrl;
