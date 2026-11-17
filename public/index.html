@@ -238,9 +238,14 @@
       <label>Video Quality / Format</label>
       <div class="quality" id="qualityPicker">
         <label><input type="radio" name="quality" value="best" checked> Best</label>
+        <label><input type="radio" name="quality" value="2160p"> 2160p</label>
+        <label><input type="radio" name="quality" value="1440p"> 1440p</label>
         <label><input type="radio" name="quality" value="1080p"> 1080p</label>
         <label><input type="radio" name="quality" value="720p"> 720p</label>
+        <label><input type="radio" name="quality" value="480p"> 480p</label>
         <label><input type="radio" name="quality" value="360p"> 360p</label>
+        <label><input type="radio" name="quality" value="240p"> 240p</label>
+        <label><input type="radio" name="quality" value="144p"> 144p</label>
         <label><input type="radio" name="quality" value="worst"> Low Quality</label>
         <label><input type="radio" name="quality" value="mp3"> Audio (MP3)</label>
       </div>
@@ -257,9 +262,14 @@
         <label>Video Quality</label>
         <div class="quality" id="ytQualityPicker">
           <label><input type="radio" name="ytquality" value="best" checked> Best</label>
+          <label><input type="radio" name="ytquality" value="2160p"> 2160p</label>
+          <label><input type="radio" name="ytquality" value="1440p"> 1440p</label>
           <label><input type="radio" name="ytquality" value="1080p"> 1080p</label>
           <label><input type="radio" name="ytquality" value="720p"> 720p</label>
+          <label><input type="radio" name="ytquality" value="480p"> 480p</label>
           <label><input type="radio" name="ytquality" value="360p"> 360p</label>
+          <label><input type="radio" name="ytquality" value="240p"> 240p</label>
+          <label><input type="radio" name="ytquality" value="144p"> 144p</label>
         </div>
         <p class="note" id="ytQualityNote" style="display:none"></p>
       </div>
@@ -634,7 +644,7 @@ function qualityNeedsMerge(url, quality) {
   if (cached && Array.isArray(cached.merged_qualities)) {
     return cached.merged_qualities.indexOf(quality) !== -1;
   }
-  return quality === 'best' || quality === '4320p' || quality === '2160p' || quality === '1080p' || quality === '720p';
+  return quality === 'best' || quality === '4320p' || quality === '2160p' || quality === '1440p' || quality === '1080p' || quality === '720p' || quality === '480p' || quality === '240p' || quality === '144p';
 }
 
 function renderResolutions(platform, available) {
