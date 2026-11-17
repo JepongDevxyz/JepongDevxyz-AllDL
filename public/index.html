@@ -731,7 +731,7 @@ async function downloadViaBlob(url, filename, btn) {
     var res = await fetch(url);
     if (!res.ok) throw new Error('fetch failed');
     var blob = await res.blob();
-    var blobUrl = window.URL.createObjectURL(blob);var cached = formatsCache[url] || {};var mTitle2 = (cached.title || '').trim();
+    var blobUrl = window.URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = blobUrl;
     a.download = filename;
@@ -953,10 +953,10 @@ function renderTiktok(data) {
       if (url) downloadViaBlob(url, filename, btn);
     };
   }
-  wireBlob(document.getElementById('ttNoWm'), item.play || item.hdplay || '', 'tiktok_nowm_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
-  wireBlob(document.getElementById('ttHd'), item.hdplay || item.play || '', 'tiktok_hd_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
-  wireBlob(document.getElementById('ttWm'), item.wmplay || '', 'tiktok_wm_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
-  wireBlob(slideshowBtn, item.play || item.hdplay || '', 'tiktok_slideshow_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
+  wireBlob(document.getElementById('ttNoWm'), item.play || item.hdplay || '', 'tiktok_nowm_' + stamp + '.mp4');
+  wireBlob(document.getElementById('ttHd'), item.hdplay || item.play || '', 'tiktok_hd_' + stamp + '.mp4');
+  wireBlob(document.getElementById('ttWm'), item.wmplay || '', 'tiktok_wm_' + stamp + '.mp4');
+  wireBlob(slideshowBtn, item.play || item.hdplay || '', 'tiktok_slideshow_' + stamp + '.mp4');
   document.getElementById('ttWm').style.display = item.wmplay ? '' : 'none';
   // Slideshow button: photo post lang na may video.
   slideshowBtn.style.display = (type !== 'video' && hasVideo) ? '' : 'none';
