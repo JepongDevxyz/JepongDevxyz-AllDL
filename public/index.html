@@ -60,7 +60,6 @@
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .brand > div { min-width: 0; }
-  
   .logo {
     width: 44px; height: 44px; border-radius: 12px;
     background: var(--accent); color: var(--accent-ink);
@@ -69,15 +68,16 @@
   }
   .brand h1 { font-size: 20px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .brand small { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .icon-btn {  
-    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;
+  .icon-btn {
     background: var(--card); color: var(--ink); border: 1px solid var(--line);
     border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;
   }
+  /* Phone: icon lang ang theme button para hindi sumikip ang header. */
   @media (max-width: 480px) {
-        .icon-btn .tlabel { display: none; }
-        .icon-btn { padding: 8px 11px; }
-        .brand h1 { font-size: 18px; }
+    .icon-btn .tlabel { display: none; }
+    .icon-btn { padding: 8px 11px; }
+    .brand h1 { font-size: 18px; }
   }
 
   .counter-card {
@@ -194,12 +194,25 @@
     background: var(--ink); color: var(--bg);
     padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 600;
     opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
-    max-width: calc(100vw - 32px); text-align: center; z-index: 50; box-shadow: 0 8px 24px var(--shadow);
+    max-width: calc(100vw - 32px); text-align: center; z-index: 50;
+    box-shadow: 0 8px 24px var(--shadow);
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 18px; line-height: 1.8; }
   footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .header-btns { display: flex; gap: 8px; align-items: center; }
+  .menu-wrap { position: relative; }
+  .menu { position: absolute; right: 0; top: calc(100% + 8px); background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.18); min-width: 230px; padding: 6px; z-index: 60; }
+  .menu a { display: block; padding: 10px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: 14px; }
+  .menu a:hover { background: var(--chip); }
+  .steps { margin: 6px 0 0 18px; line-height: 1.9; font-size: 14px; }
+  .platforms { display: grid; gap: 8px; margin-top: 10px; }
+  .platform { display: flex; gap: 10px; align-items: flex-start; background: var(--chip); border-radius: 10px; padding: 10px 12px; }
+  .platform .picon { font-size: 18px; line-height: 1.4; }
+  .platform b { display: block; font-size: 14px; }
+  .platform span:last-child { font-size: 13px; color: var(--muted); }
+  .platform.soon { opacity: .65; }
 </style>
 </head>
 <body>
@@ -210,28 +223,42 @@
       <div class="logo">JD</div>
       <div>
         <h1>JepongDevxyz — AllDL</h1>
-        <small>YouTube • TikTok • Facebook</small>
+        <small>YouTube • TikTok • Facebook • Reddit</small>
       </div>
     </div>
-    <button class="icon-btn" id="themeBtn" type="button" aria-label="Palitan ang theme"><span class="ticon">🌙</span><span class="tlabel">Dark</span></button>
+    <div class="header-btns">
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="Palitan ang theme"><span class="ticon">🌙</span><span class="tlabel">Dark</span></button>
+      <div class="menu-wrap">
+        <button class="icon-btn" id="menuBtn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false"><span class="ticon">☰</span><span class="tlabel">Menu</span></button>
+        <div class="menu" id="menuDropdown" role="menu" style="display:none">
+          <a href="#formCard" data-menu>⬇ Download</a>
+          <a href="#howto" data-menu>❓ Paano gamitin</a>
+          <a href="#platforms" data-menu>🌐 Supported platforms</a>
+          <a href="#counterCard" data-menu>📊 Download counters</a>
+          <a href="disclaimer.html" data-menu>⚖️ Disclaimer</a>
+          <a href="terms.html" data-menu>📜 Terms of Service</a>
+          <a href="privacy.html" data-menu>🔒 Privacy Policy</a>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <div class="counter-card">
+  <div class="counter-card" id="counterCard">
     <div class="total" id="totalCount">—</div>
     <div class="label" id="counterLabel">Total Downloads</div>
-    <div class="break" id="breakCount">FB — • YT — • TikTok —</div>
+    <div class="break" id="breakCount">FB — • YT — • TikTok — • Reddit —</div>
   </div>
 
   <section class="card" id="formCard">
     <h2>I-paste ang video link</h2>
-    <p class="sub">Kahit anong link — YouTube, TikTok o Facebook. Auto-detect namin kung saan galing.</p>
+    <p class="sub">Kahit anong link — YouTube, TikTok, Facebook o Reddit. Auto-detect namin kung saan galing.</p>
 
     <label for="urlInput">Video Link</label>
-    <textarea id="urlInput" placeholder="Hal. https://www.youtube.com/watch?v=… o https://vt.tiktok.com/… o https://www.facebook.com/reel/…" inputmode="url"></textarea>
+    <textarea id="urlInput" placeholder="Hal. https://www.youtube.com/watch?v=… o https://vt.tiktok.com/… o https://www.facebook.com/reel/… o https://www.reddit.com/r/…/comments/…" inputmode="url"></textarea>
 
     <div class="badge-row">
       <span class="badge" id="platformBadge"><span class="dot"></span><span id="badgeText"></span></span>
-      <span class="badge-hint" id="badgeHint">Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.</span>
+      <span class="badge-hint" id="badgeHint">Paste mo lang — lalabas dito kung YouTube, TikTok, Facebook o Reddit yan.</span>
     </div>
 
     <div id="fbQualityWrap" style="display:none">
@@ -283,6 +310,29 @@
       <button class="chip" type="button" data-demo="youtube">▶ YouTube</button>
       <button class="chip" type="button" data-demo="tiktok">♪ TikTok</button>
       <button class="chip" type="button" data-demo="facebook">f Facebook</button>
+      <button class="chip" type="button" data-demo="reddit">◉ Reddit</button>
+    </div>
+  </section>
+
+  <!-- Paano gamitin + supported platforms (menu links dito) -->
+  <section class="card" id="howto">
+    <h2>Paano gamitin</h2>
+    <ol class="steps">
+      <li><b>I-paste ang link</b> — YouTube, TikTok, Facebook o Reddit video. Auto-detect kung saan galing.</li>
+      <li><b>Piliin ang quality</b> — lalabas lang ang tunay na available na resolution.</li>
+      <li><b>I-click ang Generate</b> — hintayin ang result, tapos i-download.</li>
+    </ol>
+    <p class="sub">Libreng gamitin. Walang account, walang signup. Ang video ay dina-download mula sa mismong platform — siguraduhing may karapatan kang i-download ito.</p>
+  </section>
+
+  <section class="card" id="platforms">
+    <h2>Supported platforms</h2>
+    <div class="platforms">
+      <div class="platform"><span class="picon">▶</span><div><b>YouTube</b><span>MP3 at MP4, hanggang 8K kung available</span></div></div>
+      <div class="platform"><span class="picon">♪</span><div><b>TikTok</b><span>Video (No Watermark / HD), audio, photo slideshow</span></div></div>
+      <div class="platform"><span class="picon">f</span><div><b>Facebook</b><span>Video at audio, tunay na resolution</span></div></div>
+      <div class="platform"><span class="picon">◉</span><div><b>Reddit</b><span>Video posts, may tunog</span></div></div>
+      <div class="platform soon"><span class="picon">▣</span><div><b>Terabox</b><span>Paparating pa lang — walang gumaganang libreng API ngayon</span></div></div>
     </div>
   </section>
 
@@ -345,9 +395,17 @@
     <button class="btn ghost" type="button" data-reset>↺ Generate another</button>
   </section>
 
+  <section class="card result" id="resultReddit">
+    <h3 id="rdTitle">Reddit Video</h3>
+    <p class="meta" id="rdMeta"></p>
+    <button class="btn" id="rdDownloadBtn" type="button">⬇ Download Video</button>
+    <p class="note" id="rdFileName"></p>
+    <button class="btn ghost" type="button" data-reset>↺ Generate another</button>
+  </section>
+
   <footer>
     JepongDevxyz AllDL — pinagsama ang FBDL4U, YT4U at UDLTIKVIDZ sa isang app.<br>
-    YouTube, TikTok at Facebook links lang ang suportado.<br>
+    YouTube, TikTok, Facebook at Reddit links lang ang suportado.<br>
     <a href="/disclaimer.html">Disclaimer</a> • <a href="/terms.html">Terms of Service</a> • <a href="/privacy.html">Privacy Policy</a>
   </footer>
 </div>
@@ -370,6 +428,7 @@ function detectPlatform(rawUrl) {
   if (host === 'youtube.com' || host === 'youtu.be' || host === 'music.youtube.com' || host === 'm.youtube.com') return 'youtube';
   if (host === 'tiktok.com' || host === 'vt.tiktok.com' || host === 'vm.tiktok.com') return 'tiktok';
   if (host === 'facebook.com' || host === 'fb.com' || host === 'fb.watch' || host === 'm.facebook.com' || host === 'web.facebook.com') return 'facebook';
+  if (host === 'reddit.com' || host === 'old.reddit.com' || host === 'redd.it') return 'reddit';
   return null;
 }
 function extractYouTubeID(url) {
@@ -416,6 +475,8 @@ var root = document.documentElement;
 var themeBtn = document.getElementById('themeBtn');
 function applyTheme(theme) {
   root.setAttribute('data-theme', theme);
+  // State-based ang label: ipinapakita ang KASALUKUYANG theme (naka-Dark
+  // ka ngayon), hindi yung lilipatan — para hindi malito.
   var icon = themeBtn.querySelector('.ticon');
   var label = themeBtn.querySelector('.tlabel');
   if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
@@ -429,12 +490,36 @@ themeBtn.addEventListener('click', function () {
   applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 });
 
+// ---- Dropdown menu (header) ----
+var menuBtn = document.getElementById('menuBtn');
+var menuDropdown = document.getElementById('menuDropdown');
+if (menuBtn && menuDropdown) {
+  menuBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = menuDropdown.style.display === 'block';
+    menuDropdown.style.display = open ? 'none' : 'block';
+    menuBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
+  });
+  menuDropdown.addEventListener('click', function (e) {
+    if (e.target && e.target.closest && e.target.closest('[data-menu]')) {
+      menuDropdown.style.display = 'none';
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+  document.addEventListener('click', function (e) {
+    if (menuDropdown.style.display === 'block' && !menuDropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+      menuDropdown.style.display = 'none';
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
 // ---- Counter: PER PLATFORM ang lalabas (flow ni Jepong) ----
 // YT link -> YouTube counter. FB link -> Facebook counter.
 // TikTok link -> TikTok counter. Walang link -> Total Downloads.
 // Ang `count` galing sa /api/counter ay laging yung counter ng
 // platform na hiningi (tingnan ang api/counter.js).
-var PLATFORM_COUNTER_LABEL = { youtube: 'YouTube Downloads', tiktok: 'TikTok Downloads', facebook: 'Facebook Downloads' };
+var PLATFORM_COUNTER_LABEL = { youtube: 'YouTube Downloads', tiktok: 'TikTok Downloads', facebook: 'Facebook Downloads', reddit: 'Reddit Downloads' };
 var currentCounterPlatform = null; // null = total ang pinapakita
 
 function renderCounter(data) {
@@ -445,15 +530,17 @@ function renderCounter(data) {
   if (data.platform && PLATFORM_COUNTER_LABEL[data.platform]) {
     // May platform na pinaste: counter NUNG platform na yun ang bida.
     label.textContent = PLATFORM_COUNTER_LABEL[data.platform];
+    // TikTok: 0 = walang data (walang Redis ang TikTok backend — hindi
+    // 0 downloads), kaya '—' ang ipinapakita, tulad ng loading state.
     total.textContent = (data.platform === 'tiktok' && !data.count) ? '—' : fmtNum(data.count);
     var all = (data.total != null) ? data.total
-      : ((data.breakdown ? (data.breakdown.facebook + data.breakdown.youtube + data.breakdown.tiktok) : data.count));
+      : ((data.breakdown ? (data.breakdown.facebook + data.breakdown.youtube + data.breakdown.tiktok + (data.breakdown.reddit || 0)) : data.count));
     brk.textContent = 'Total sa lahat: ' + fmtNum(all);
   } else {
     label.textContent = 'Total Downloads';
     total.textContent = fmtNum(data.count);
     if (data.breakdown) {
-      brk.textContent = 'FB ' + fmtNum(data.breakdown.facebook) + ' • YT ' + fmtNum(data.breakdown.youtube) + ' • TikTok ' + (data.breakdown.tiktok ? fmtNum(data.breakdown.tiktok) : '—');
+      brk.textContent = 'FB ' + fmtNum(data.breakdown.facebook) + ' • YT ' + fmtNum(data.breakdown.youtube) + ' • TikTok ' + (data.breakdown.tiktok ? fmtNum(data.breakdown.tiktok) : '—') + ' • Reddit ' + (data.breakdown.reddit ? fmtNum(data.breakdown.reddit) : '—');
     }
   }
 }
@@ -489,7 +576,7 @@ var loadingBox = document.getElementById('loadingBox');
 var loadingText = document.getElementById('loadingText');
 var generateBtn = document.getElementById('generateBtn');
 
-var PLATFORM_LABEL = { youtube: 'YouTube', tiktok: 'TikTok', facebook: 'Facebook' };
+var PLATFORM_LABEL = { youtube: 'YouTube', tiktok: 'TikTok', facebook: 'Facebook', reddit: 'Reddit' };
 
 function showError(msg) {
   errorBox.textContent = msg;
@@ -504,7 +591,7 @@ function resetAll() {
   hideError();
   hideResults();
   badge.classList.remove('show', 'yt', 'tt', 'fb', 'bad');
-  badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.';
+  badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok, Facebook o Reddit yan.';
   fbQualityWrap.style.display = 'none';
   ytFormatWrap.style.display = 'none';
   ytQualityWrap.style.display = 'none';
@@ -522,7 +609,7 @@ urlInput.addEventListener('input', function () {
   hideError();
   if (!val) {
     badge.classList.remove('show', 'yt', 'tt', 'fb', 'bad');
-    badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.';
+    badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok, Facebook o Reddit yan.';
     fbQualityWrap.style.display = 'none';
     ytFormatWrap.style.display = 'none';
     ytQualityWrap.style.display = 'none';
@@ -558,7 +645,7 @@ urlInput.addEventListener('input', function () {
     loadPlatformCounter(null);
   } else {
     badge.classList.remove('show');
-    badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.';
+    badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok, Facebook o Reddit yan.';
     fbQualityWrap.style.display = 'none';
     ytFormatWrap.style.display = 'none';
     ytQualityWrap.style.display = 'none';
@@ -584,7 +671,8 @@ document.querySelectorAll('.chip[data-demo]').forEach(function (chip) {
     var demo = {
       youtube: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
       tiktok: 'https://www.tiktok.com/@tiktok/video/7223723522508225798',
-      facebook: 'https://www.facebook.com/reel/1234567890123456'
+      facebook: 'https://www.facebook.com/reel/1234567890123456',
+      reddit: 'https://www.reddit.com/r/Unexpected/comments/1cl9h0u/the_insurance_claim_will_be_interesting/'
     }[chip.getAttribute('data-demo')];
     urlInput.value = demo;
     urlInput.dispatchEvent(new Event('input'));
@@ -778,7 +866,8 @@ generateBtn.addEventListener('click', async function () {
   var ytFmt = selectedYtFormat();
   var ytQuality = selectedYtQuality();
   loadingText.textContent = platform === 'youtube' ? (ytFmt === 'mp4' ? 'Kinukuha ang MP4…' : 'Kinukuha ang MP3…') :
-    platform === 'tiktok' ? 'Kinukuha ang TikTok video…' : 'Kinukuha ang Facebook video…';
+    platform === 'tiktok' ? 'Kinukuha ang TikTok video…' :
+    platform === 'reddit' ? 'Kinukuha ang Reddit video…' : 'Kinukuha ang Facebook video…';
   loadingBox.classList.add('show');
 
   try {
@@ -787,12 +876,15 @@ generateBtn.addEventListener('click', async function () {
     // ang tunay na resolution. Pag nag-fail ang merge ng FB, balik
     // sa direktang link (yun pa rin ang dating behavior).
     var fbQuality = selectedQuality();
-    var mergeQuality = platform === 'youtube' ? ytQuality : fbQuality;
+    var mergeQuality = platform === 'youtube' ? ytQuality : (platform === 'reddit' ? 'best' : fbQuality);
     var needsMerge = (platform === 'youtube' && ytFmt === 'mp4' && qualityNeedsMerge(url, ytQuality)) ||
-      (platform === 'facebook' && fbQuality !== 'mp3' && fbQuality !== 'worst' && qualityNeedsMerge(url, fbQuality));
+      (platform === 'facebook' && fbQuality !== 'mp3' && fbQuality !== 'worst' && qualityNeedsMerge(url, fbQuality)) ||
+      (platform === 'reddit');
     var mergedOk = false;
     if (needsMerge) {
-      loadingText.textContent = 'Mino-merge ang ' + mergeQuality + '… medyo matatagal (mga 30–60 segundo).';
+      loadingText.textContent = platform === 'reddit'
+        ? 'Mino-merge ang Reddit video… medyo matatagal (mga 30–60 segundo).'
+        : 'Mino-merge ang ' + mergeQuality + '… medyo matatagal (mga 30–60 segundo).';
       var mRes = await fetch(FB_BACKEND + '/api/download-merged', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -802,8 +894,10 @@ generateBtn.addEventListener('click', async function () {
       if (mType.indexOf('application/json') !== -1) {
         var mData = await mRes.json().catch(function () { return {}; });
         if (!mRes.ok || mData.error || mData.detail) {
-          if (platform === 'youtube') {
-            showError(mData.error || mData.detail || 'Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
+          if (platform === 'youtube' || platform === 'reddit') {
+            showError(platform === 'reddit'
+              ? (mData.error || mData.detail || 'Hindi ma-download ang Reddit video na ito. Siguraduhing public video post ang link.')
+              : (mData.error || mData.detail || 'Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.'));
             return;
           }
           // Facebook: hindi na-merge — balik sa direktang link sa baba.
@@ -824,24 +918,37 @@ generateBtn.addEventListener('click', async function () {
             }, url);
           }
           mergedOk = true;
-        } else if (platform === 'youtube') {
-          showError('Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
+        } else if (platform === 'youtube' || platform === 'reddit') {
+          showError(platform === 'reddit'
+            ? 'Hindi ma-download ang Reddit video na ito. Siguraduhing public video post ang link.'
+            : 'Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
           return;
         }
       } else if (mRes.ok) {
         var blob = await mRes.blob();
         var blobUrl = window.URL.createObjectURL(blob);
+        // Tunay na title galing sa /api/formats (naka-cache nung nag-paste)
+        // — hindi 'video' galing sa filename ng server.
         var cached = formatsCache[url] || {};
         var mTitle2 = (cached.title || '').trim();
         var disp = mRes.headers.get('content-disposition') || '';
         var m = disp.match(/filename="?([^";]+)"?/);
         var fname = mTitle2
-            ? ((mTitle2.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4')
+          ? ((mTitle2.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4')
           : (m ? m[1] : 'video.mp4');
         if (platform === 'facebook') {
           renderFacebook({
             platform: 'facebook', status: 'success', download_url: blobUrl,
             video_info: { title: mTitle2 || 'Facebook Video' }, direct: true
+          });
+        } else if (platform === 'reddit') {
+          var rdSub = '';
+          var rdM = url.match(/reddit\.com\/r\/([^\/]+)/);
+          if (rdM) rdSub = rdM[1];
+          renderReddit({
+            platform: 'reddit', status: 'success', download_url: blobUrl,
+            title: (mTitle2 || fname.replace(/\.mp4$/i, '') || 'Reddit Video'),
+            filename: fname, subreddit: rdSub, direct: true
           });
         } else {
           renderYoutube({
@@ -851,8 +958,10 @@ generateBtn.addEventListener('click', async function () {
           }, url);
         }
         mergedOk = true;
-      } else if (platform === 'youtube') {
-        showError('Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
+      } else if (platform === 'youtube' || platform === 'reddit') {
+        showError(platform === 'reddit'
+          ? 'Hindi ma-download ang Reddit video na ito. Siguraduhing public video post ang link.'
+          : 'Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
         return;
       }
       // Pag FB at nag-fail ang merge, mergedOk = false → diretso sa baba.
@@ -875,12 +984,18 @@ generateBtn.addEventListener('click', async function () {
 
       if (platform === 'youtube') renderYoutube(data, url);
       else if (platform === 'tiktok') renderTiktok(data);
+      else if (platform === 'reddit') renderReddit(data);
       else renderFacebook(data);
       if (needsMerge && !mergedOk && platform === 'facebook') toast('Hindi na-merge sa server — direktang link na lang ang nakuha (mas mababang quality).');
     }
 
+    // Naka-render na ang result — ibalik agad ang Generate button, BAGO
+    // pa ang counter. (Dati, hinihintay pa ang counter kaya mukhang
+    // stuck sa loading kahit may result na.)
     loadingBox.classList.remove('show');
     generateBtn.disabled = false;
+    // I-increment ang counter ng platform na to — tunay na
+    // fire-and-forget, hindi na hinihintay.
     fetch('/api/counter?platform=' + platform, { method: 'POST' })
       .then(function (cRes) { return cRes.json(); })
       .then(function (cData) { renderCounter(cData); })
@@ -964,6 +1079,7 @@ function renderTiktok(data) {
   if (type === 'video' && hasVideo) {
     video.style.display = 'block';
     video.src = item.hdplay || item.play || '';
+    // Poster para hindi itim na frame habang naglo-load ang video.
     video.poster = item.cover || '';
     video.load();
     videoBtns.style.display = 'grid';
@@ -1100,6 +1216,39 @@ document.getElementById('fbDownloadBtn').addEventListener('click', function () {
   var proxyUrl = '/api/proxy-download?url=' + encodeURIComponent(fbDownloadUrl) +
     '&filename=' + encodeURIComponent(safeFileName(title, ext));
   window.location.href = proxyUrl;
+});
+
+// ---- Reddit result (v1.3) ----
+var rdDownloadUrl = '';
+var rdDirect = false;
+function renderReddit(data) {
+  var d = data || {};
+  rdDownloadUrl = d.download_url || '';
+  rdDirect = !!d.direct;
+  var title = (d.title || 'Reddit Video');
+  var sub = d.subreddit ? ('r/' + d.subreddit) : 'Reddit';
+  document.getElementById('rdTitle').textContent = title;
+  document.getElementById('rdMeta').textContent = sub + ' • Reddit video (may tunog)';
+  document.getElementById('rdFileName').textContent = d.filename || ((title.replace(/[\\/:*?"<>|]/g, '').trim() || 'reddit-video') + '.mp4');
+  document.getElementById('resultReddit').classList.add('show');
+  document.getElementById('resultReddit').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+document.getElementById('rdDownloadBtn').addEventListener('click', function () {
+  if (!rdDownloadUrl) { showError('Wala pang video na nakuha. I-generate mo muna.'); return; }
+  var fname = document.getElementById('rdFileName').textContent || 'reddit-video.mp4';
+  if (rdDirect) {
+    // Merged file na — blob URL mismo, diretso ang download.
+    var a = document.createElement('a');
+    a.href = rdDownloadUrl;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast('Na-download na 🙂');
+    return;
+  }
+  window.location.href = '/api/proxy-download?url=' + encodeURIComponent(rdDownloadUrl) +
+    '&filename=' + encodeURIComponent(fname);
 });
 </script>
 </body>
