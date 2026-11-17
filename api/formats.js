@@ -9,6 +9,19 @@
 import { detectPlatform, extractUrlFromText } from './download.js';
 
 const FB_BACKEND = 'https://jepong-devxyz-fb-dl4u.vercel.app';
+// v1.1: ang raw yt-dlp error (bot check + wiki links) ay hindi na
+// ipinapakita sa user — maikling Tagalog message na lang.
+function friendlyUpstreamError(msg) {
+  const m = String(msg || '');
+  const low = m.toLowerCase();
+  if (low.includes('sign in to confirm') || low.includes('not a bot')) {
+    return "Na-block ng YouTube ang server ngayon (bot check). Subukan ulit mamaya, o 360p/MP3 muna.";
+  }
+  if (low.includes('requested format is not available')) {
+    return 'Hindi makuha ang video na ito ngayon. Subukan ang ibang quality o subukan ulit mamaya.';
+  }
+  return m;
+}
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -69,9 +82,10 @@ export default async function handler(req, res) {
       data = null;
     }
     if (!fbRes.ok || !data || data.status !== 'success') {
-      const msg =
+      const msg = friendlyUpstreamError(
         (data && (data.detail || data.message || data.error)) ||
-        'Hindi ma-check ang available na resolution ngayon.';
+        'Hindi ma-check ang available na resolution ngayon.',
+      );
       return res.status(fbRes.status >= 400 ? fbRes.status : 502).json({ error: msg });
     }
     return res.status(200).json({
