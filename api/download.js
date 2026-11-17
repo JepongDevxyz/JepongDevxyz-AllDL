@@ -24,7 +24,20 @@ const TIKWM_API = 'https://tikwm.com/api/';
 const RAPIDAPI_HOST = 'youtube-mp36.p.rapidapi.com';
 
 // Mga quality na tinatanggap ng FB backend — ipinapasa ng buo, walang binabago.
-const FB_QUALITIES = new Set(['best', '1080p', '720p', '360p', 'worst', 'mp3']);
+const FB_QUALITIES = new Set(['best', '4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p', 'worst', 'mp3']);
+// v1.1: ang raw yt-dlp error (bot check + wiki links) ay hindi na
+// ipinapakita sa user — maikling Tagalog message na lang.
+function friendlyUpstreamError(msg) {
+  const m = String(msg || '');
+  const low = m.toLowerCase();
+  if (low.includes('sign in to confirm') || low.includes('not a bot')) {
+    return "Na-block ng YouTube ang server ngayon (bot check). Subukan ulit mamaya, o 360p/MP3 muna.";
+  }
+  if (low.includes('requested format is not available')) {
+    return 'Hindi makuha ang video na ito ngayon. Subukan ang ibang quality o subukan ulit mamaya.';
+  }
+  return m;
+}
 
 // Kunin ang unang http(s) URL sa loob ng text (para ok kahit may
 // extra words sa paligid ng na-paste na link).
@@ -242,9 +255,10 @@ async function handleYouTube(url, format, quality) {
       body: JSON.stringify({ url, quality: q }),
     });
     if (!data || data.status !== 'success' || !data.download_url) {
-      const msg =
+      const msg = friendlyUpstreamError(
         (data && (data.detail || data.message || data.error)) ||
-        'Hindi pa makuha ang MP4 ng video na ito. Subukan ang MP3, o subukan ulit mamaya.';
+        'Hindi pa makuha ang MP4 ng video na ito. Subukan ang MP3, o subukan ulit mamaya.',
+      );
       return { status: status >= 400 ? status : 502, body: { error: msg } };
     }
     const info = data.video_info || {};
@@ -320,9 +334,10 @@ async function handleFacebook(url, quality) {
     body: JSON.stringify({ url, quality: q }),
   });
   if (!data || data.status !== 'success' || !data.download_url) {
-    const msg =
+    const msg = friendlyUpstreamError(
       (data && (data.detail || data.message || data.error)) ||
-      'Failed to extract video information.';
+      'Failed to extract video information.',
+    );
     return { status: status >= 400 ? status : 502, body: { error: msg } };
   }
   return {
