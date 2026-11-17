@@ -1,5 +1,5 @@
 // JepongDevxyz AllDL — api/download.js
-// Isang endpoint lang para sa lahat: YouTube, TikTok, at Facebook.
+// Isang endpoint lang para sa lahat: YouTube, TikTok, Facebook at Reddit.
 // Dinidetect ang platform server-side (hindi pinagkakatiwalaan ang
 // label galing sa client), tapos ni-route sa tamang backend:
 //   - TikTok  -> tikwm.com/api (walang key, tulad ng original na TT app);
@@ -11,12 +11,16 @@
 //                MP4: yt-dlp sa FB backend (kailangan ng patch sa FB
 //                backend — tingnan ang fb-backend-mp4-patch.md).
 //   - Facebook -> lumang FBDL4U backend (FastAPI + yt-dlp sa Render)
+//   - Reddit  -> HINDI dito — ang Reddit ay dina-download ng frontend
+//                diretso sa FB backend /api/download-merged (FreeApi.Pro
+//                + ffmpeg merge). Dito, malinaw na error lang ang ibabalik
+//                kung may tumawag ng /api/download na Reddit link.
 // Zero dependencies — Node fetch lang ang gamit.
 // GET  ?url=...&format=mp3&quality=best
 // POST JSON { url, quality, format }
 
 const UNSUPPORTED_MSG =
-  'Hindi suportado ang link na yan. YouTube, TikTok o Facebook link lang.';
+  'Hindi suportado ang link na yan. YouTube, TikTok, Facebook o Reddit link lang.';
 
 const FB_BACKEND = 'https://jepong-devxyz-fb-dl4u.vercel.app';
 const YT_BACKEND = 'https://jepong-devxyz-yt-4-u.vercel.app';
@@ -25,6 +29,7 @@ const RAPIDAPI_HOST = 'youtube-mp36.p.rapidapi.com';
 
 // Mga quality na tinatanggap ng FB backend — ipinapasa ng buo, walang binabago.
 const FB_QUALITIES = new Set(['best', '4320p', '2160p', '1440p', '1080p', '720p', '480p', '360p', '240p', '144p', 'worst', 'mp3']);
+
 // v1.1: ang raw yt-dlp error (bot check + wiki links) ay hindi na
 // ipinapakita sa user — maikling Tagalog message na lang.
 function friendlyUpstreamError(msg) {
@@ -80,6 +85,9 @@ export function detectPlatform(rawUrl) {
     host === 'web.facebook.com'
   ) {
     return 'facebook';
+  }
+  if (host === 'reddit.com' || host === 'old.reddit.com' || host === 'redd.it') {
+    return 'reddit';
   }
   return null;
 }
@@ -374,6 +382,14 @@ export default async function handler(req, res) {
     const quality = params.quality || 'best';
 
     let result;
+    if (platform === 'reddit') {
+      // Ang Reddit ay naka-merge sa server — ang frontend ang tumatawag
+      // diretso sa FB backend /api/download-merged. Dito, malinaw na
+      // error lang (hindi pwedeng ibalik ang file bilang JSON).
+      return res.status(400).json({
+        error: 'Ang Reddit video ay dina-download sa pamamagitan ng merge — gamitin ang Generate button sa homepage.',
+      });
+    }
     if (platform === 'tiktok') result = await handleTikTok(url);
     else if (platform === 'youtube') result = await handleYouTube(url, format, quality);
     else result = await handleFacebook(url, quality);
