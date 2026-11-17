@@ -52,24 +52,32 @@
     color: var(--ink);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh;
-    padding: 16px 14px 40px;
+    padding: 16px 14px 96px;
     transition: background 0.25s, color 0.25s;
   }
   .wrap { max-width: 560px; margin: 0 auto; }
 
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand > div { min-width: 0; }
+  
   .logo {
     width: 44px; height: 44px; border-radius: 12px;
     background: var(--accent); color: var(--accent-ink);
     display: flex; align-items: center; justify-content: center;
     font-weight: 800; font-size: 20px; flex-shrink: 0;
   }
-  .brand h1 { font-size: 20px; line-height: 1.1; }
-  .brand small { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
-  .icon-btn {
+  .brand h1 { font-size: 20px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand small { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icon-btn {  
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;
     background: var(--card); color: var(--ink); border: 1px solid var(--line);
     border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer;
+  }
+  @media (max-width: 480px) {
+        .icon-btn .tlabel { display: none; }
+        .icon-btn { padding: 8px 11px; }
+        .brand h1 { font-size: 18px; }
   }
 
   .counter-card {
@@ -186,7 +194,7 @@
     background: var(--ink); color: var(--bg);
     padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 600;
     opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
-    max-width: calc(100vw - 32px); text-align: center; z-index: 50;
+    max-width: calc(100vw - 32px); text-align: center; z-index: 50; box-shadow: 0 8px 24px var(--shadow);
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -202,10 +210,10 @@
       <div class="logo">JD</div>
       <div>
         <h1>JepongDevxyz — AllDL</h1>
-        <small>YouTube • TikTok • Facebook — isang paste box lang</small>
+        <small>YouTube • TikTok • Facebook</small>
       </div>
     </div>
-    <button class="icon-btn" id="themeBtn" type="button" aria-label="Palitan ang theme">🌙 Dark</button>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Palitan ang theme"><span class="ticon">🌙</span><span class="tlabel">Dark</span></button>
   </header>
 
   <div class="counter-card">
@@ -398,7 +406,10 @@ var root = document.documentElement;
 var themeBtn = document.getElementById('themeBtn');
 function applyTheme(theme) {
   root.setAttribute('data-theme', theme);
-  themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+  var icon = themeBtn.querySelector('.ticon');
+  var label = themeBtn.querySelector('.tlabel');
+  if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+  if (label) label.textContent = theme === 'dark' ? 'Dark' : 'Light';
   try { localStorage.setItem('alldl-theme', theme); } catch (e) {}
 }
 var savedTheme = null;
@@ -424,7 +435,7 @@ function renderCounter(data) {
   if (data.platform && PLATFORM_COUNTER_LABEL[data.platform]) {
     // May platform na pinaste: counter NUNG platform na yun ang bida.
     label.textContent = PLATFORM_COUNTER_LABEL[data.platform];
-    total.textContent = fmtNum(data.count);
+    total.textContent = (data.platform === 'tiktok' && !data.count) ? '—' : fmtNum(data.count);
     var all = (data.total != null) ? data.total
       : ((data.breakdown ? (data.breakdown.facebook + data.breakdown.youtube + data.breakdown.tiktok) : data.count));
     brk.textContent = 'Total sa lahat: ' + fmtNum(all);
@@ -432,7 +443,7 @@ function renderCounter(data) {
     label.textContent = 'Total Downloads';
     total.textContent = fmtNum(data.count);
     if (data.breakdown) {
-      brk.textContent = 'FB ' + fmtNum(data.breakdown.facebook) + ' • YT ' + fmtNum(data.breakdown.youtube) + ' • TikTok ' + fmtNum(data.breakdown.tiktok);
+      brk.textContent = 'FB ' + fmtNum(data.breakdown.facebook) + ' • YT ' + fmtNum(data.breakdown.youtube) + ' • TikTok ' + (data.breakdown.tiktok ? fmtNum(data.breakdown.tiktok) : '—');
     }
   }
 }
@@ -720,7 +731,7 @@ async function downloadViaBlob(url, filename, btn) {
     var res = await fetch(url);
     if (!res.ok) throw new Error('fetch failed');
     var blob = await res.blob();
-    var blobUrl = window.URL.createObjectURL(blob);
+    var blobUrl = window.URL.createObjectURL(blob);var cached = formatsCache[url] || {};var mTitle2 = (cached.title || '').trim();
     var a = document.createElement('a');
     a.href = blobUrl;
     a.download = filename;
@@ -793,12 +804,16 @@ generateBtn.addEventListener('click', async function () {
       } else if (mRes.ok) {
         var blob = await mRes.blob();
         var blobUrl = window.URL.createObjectURL(blob);
+        var cached = formatsCache[url] || {};
+        var mTitle2 = (cached.title || '').trim();
         var disp = mRes.headers.get('content-disposition') || '';
         var m = disp.match(/filename="?([^";]+)"?/);
-        var fname = m ? m[1] : 'video.mp4';
+        var fname = mTitle2
+            ? ((mTitle2.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4')
+          : (m ? m[1] : 'video.mp4');
         renderYoutube({
           platform: 'youtube', format: 'mp4',
-          title: fname.replace(/\.mp4$/i, ''),
+          title: mTitle2 || fname.replace(/\.mp4$/i, ''),
           downloadUrl: blobUrl, filename: fname, direct: true
         }, url);
       } else {
@@ -826,11 +841,12 @@ generateBtn.addEventListener('click', async function () {
       else renderFacebook(data);
     }
 
-    // I-increment ang counter ng platform na to (fire-and-forget).
-    try {
-      var cRes = await fetch('/api/counter?platform=' + platform, { method: 'POST' });
-      renderCounter(await cRes.json());
-    } catch (e) {}
+    loadingBox.classList.remove('show');
+    generateBtn.disabled = false;
+    fetch('/api/counter?platform=' + platform, { method: 'POST' })
+      .then(function (cRes) { return cRes.json(); })
+      .then(function (cData) { renderCounter(cData); })
+      .catch(function () {});
     toast('Ayos! Piliin mo na ang download mo 🙂');
   } catch (e) {
     showError('Hindi ma-process ang video ngayon. Subukan ulit mamaya.');
@@ -899,7 +915,7 @@ function renderTiktok(data) {
   if (type === 'photo') badgeParts.push('📷 Photo • ' + images.length + ' photos');
   else if (type === 'video') badgeParts.push('🎬 Video');
   else if (type === 'music') badgeParts.push('🎵 Music');
-  if (hasMusic && type !== 'music') badgeParts.push('+ 🎵 Music');
+  if (hasMusic && type !== 'music') badgeParts.push('🎵 Music');
   document.getElementById('ttTypeBadge').textContent = badgeParts.join('  •  ');
 
   // ---- VIDEO: player + No Watermark / HD / Watermark ----
@@ -910,12 +926,14 @@ function renderTiktok(data) {
   if (type === 'video' && hasVideo) {
     video.style.display = 'block';
     video.src = item.play || item.hdplay || '';
+    video.poster = item.cover || '';
     video.load();
     videoBtns.style.display = 'grid';
     slideshowBtn.style.display = 'none';
   } else {
     video.style.display = 'none';
     video.removeAttribute('src');
+    video.removeAttribute('poster');
     video.load();
     // Photo post: may slideshow video pa rin — alok bilang download.
     if (hasVideo) {
@@ -935,10 +953,10 @@ function renderTiktok(data) {
       if (url) downloadViaBlob(url, filename, btn);
     };
   }
-  wireBlob(document.getElementById('ttNoWm'), item.play || item.hdplay || '', 'tiktok_nowm_' + stamp + '.mp4');
-  wireBlob(document.getElementById('ttHd'), item.hdplay || item.play || '', 'tiktok_hd_' + stamp + '.mp4');
-  wireBlob(document.getElementById('ttWm'), item.wmplay || '', 'tiktok_wm_' + stamp + '.mp4');
-  wireBlob(slideshowBtn, item.play || item.hdplay || '', 'tiktok_slideshow_' + stamp + '.mp4');
+  wireBlob(document.getElementById('ttNoWm'), item.play || item.hdplay || '', 'tiktok_nowm_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
+  wireBlob(document.getElementById('ttHd'), item.hdplay || item.play || '', 'tiktok_hd_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
+  wireBlob(document.getElementById('ttWm'), item.wmplay || '', 'tiktok_wm_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
+  wireBlob(slideshowBtn, item.play || item.hdplay || '', 'tiktok_slideshow_' + stamp + '.mp4'): (m ? m[1] : 'video.mp4');;
   document.getElementById('ttWm').style.display = item.wmplay ? '' : 'none';
   // Slideshow button: photo post lang na may video.
   slideshowBtn.style.display = (type !== 'video' && hasVideo) ? '' : 'none';
