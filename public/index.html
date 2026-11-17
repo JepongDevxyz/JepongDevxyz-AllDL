@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="tl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>JepongDevxyz — AllDL | YouTube, TikTok &amp; Facebook Downloader</title>
+<meta name="description" content="Isang paste box lang — pwede ang YouTube, TikTok at Facebook link. I-paste mo, kami na bahala.">
+<style>
+  /* Lahat ng kulay dito lang naka-define — walang hardcoded na kulay sa baba. */
+  :root {
+    --bg: #0e1116;
+    --card: #171c24;
+    --card-2: #1f2631;
+    --ink: #f2f4f8;
+    --muted: #9aa4b2;
+    --line: #2a323f;
+    --accent: #22c55e;
+    --accent-ink: #052e16;
+    --danger: #f87171;
+    --success: #4ade80;
+    --yt: #ff0033;
+    --tt: #25f4ee;
+    --fb: #1877f2;
+    --shadow: rgba(0, 0, 0, 0.35);
+    --chip: #232b37;
+    --input: #10141b;
+    --radius: 16px;
+  }
+  [data-theme="light"] {
+    --bg: #f2f4f8;
+    --card: #ffffff;
+    --card-2: #eef1f6;
+    --ink: #14181f;
+    --muted: #5b6675;
+    --line: #d9dee6;
+    --accent: #16a34a;
+    --accent-ink: #ffffff;
+    --danger: #dc2626;
+    --success: #15803d;
+    --yt: #ff0033;
+    --tt: #0ea5a4;
+    --fb: #1877f2;
+    --shadow: rgba(20, 30, 50, 0.12);
+    --chip: #e8ecf2;
+    --input: #f6f8fb;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    padding: 16px 14px 40px;
+    transition: background 0.25s, color 0.25s;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--accent); color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 20px; flex-shrink: 0;
+  }
+  .brand h1 { font-size: 20px; line-height: 1.1; }
+  .brand small { color: var(--muted); font-size: 12px; display: block; margin-top: 2px; }
+  .icon-btn {
+    background: var(--card); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 14px; font-size: 14px; cursor: pointer;
+  }
+
+  .counter-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 14px; text-align: center;
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+  .counter-card .total { font-size: 32px; font-weight: 800; line-height: 1; }
+  .counter-card .label { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .counter-card .break { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 16px; box-shadow: 0 4px 16px var(--shadow);
+  }
+  .card h2 { font-size: 18px; margin-bottom: 4px; }
+  .card p.sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  textarea {
+    width: 100%; min-height: 64px; resize: vertical;
+    background: var(--input); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px; font-size: 15px; font-family: inherit;
+  }
+  textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .badge-row { min-height: 34px; margin: 10px 0; display: flex; align-items: center; gap: 8px; }
+  .badge {
+    display: none; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px;
+  }
+  .badge.show { display: inline-flex; }
+  .badge .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--badge-color); }
+  .badge.yt { background: var(--chip); color: var(--ink); --badge-color: var(--yt); }
+  .badge.tt { background: var(--chip); color: var(--ink); --badge-color: var(--tt); }
+  .badge.fb { background: var(--chip); color: var(--ink); --badge-color: var(--fb); }
+  .badge.bad { background: var(--chip); color: var(--danger); --badge-color: var(--danger); }
+  .badge-hint { color: var(--muted); font-size: 12px; }
+
+  .btn {
+    width: 100%; border: none; border-radius: 12px; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink);
+    font-size: 16px; font-weight: 700; padding: 14px;
+  }
+  .btn:disabled { opacity: 0.55; cursor: wait; }
+  .btn.ghost {
+    background: var(--card-2); color: var(--ink);
+    border: 1px solid var(--line); margin-top: 10px;
+  }
+  .btn.small { width: auto; padding: 10px 16px; font-size: 14px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .chip {
+    background: var(--chip); border: 1px solid var(--line); color: var(--muted);
+    border-radius: 999px; padding: 6px 12px; font-size: 12px; cursor: pointer;
+  }
+
+  .error {
+    display: none; margin-top: 12px; padding: 12px;
+    background: var(--card-2); color: var(--danger);
+    border: 1px solid var(--danger); border-radius: 12px; font-size: 14px;
+  }
+  .error.show { display: block; }
+
+  .loading { display: none; text-align: center; padding: 22px 0 6px; color: var(--muted); font-size: 14px; }
+  .loading.show { display: block; }
+  .spinner {
+    width: 34px; height: 34px; margin: 0 auto 10px; border-radius: 50%;
+    border: 3px solid var(--line); border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result { display: none; margin-top: 14px; }
+  .result.show { display: block; }
+  .result .thumb { width: 100%; border-radius: 12px; display: block; margin-bottom: 12px; }
+  .result video { width: 100%; border-radius: 12px; display: block; margin-bottom: 12px; background: var(--input); }
+  .result h3 { font-size: 16px; line-height: 1.35; margin-bottom: 6px; }
+  .result .meta { color: var(--muted); font-size: 13px; line-height: 1.6; margin-bottom: 12px; }
+  .result .caption { color: var(--ink); font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+  .author { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .author img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--chip); }
+  .author .name { font-weight: 700; font-size: 14px; }
+  .author .handle { color: var(--muted); font-size: 13px; }
+  .stats { display: flex; gap: 14px; color: var(--muted); font-size: 13px; margin-bottom: 12px; flex-wrap: wrap; }
+  .dl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dl-grid .btn { font-size: 14px; padding: 12px 8px; }
+  .dl-grid .btn.wide { grid-column: 1 / -1; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 10px; text-align: center; }
+
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+  .gallery img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid transparent; background: var(--input); }
+  .gallery img.active { border-color: var(--accent); }
+  .music-box { background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+  .music-box .mrow { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .music-box img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: var(--chip); }
+  .music-box .name { font-weight: 700; font-size: 14px; }
+  .music-box .handle { color: var(--muted); font-size: 13px; }
+  .music-box audio { width: 100%; margin-bottom: 10px; }
+  .music-box .btn { display: block; text-align: center; text-decoration: none; }
+  #ttTypeBadge { font-weight: 700; }
+
+  .quality { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .quality label {
+    display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer;
+    background: var(--card-2); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 12px; font-size: 14px; font-weight: 600;
+  }
+  .quality input { accent-color: var(--accent); }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--bg);
+    padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 600;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s;
+    max-width: calc(100vw - 32px); text-align: center; z-index: 50;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 18px; line-height: 1.8; }
+  footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="logo">JD</div>
+      <div>
+        <h1>JepongDevxyz — AllDL</h1>
+        <small>YouTube • TikTok • Facebook — isang paste box lang</small>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Palitan ang theme">🌙 Dark</button>
+  </header>
+
+  <div class="counter-card">
+    <div class="total" id="totalCount">—</div>
+    <div class="label" id="counterLabel">Total Downloads</div>
+    <div class="break" id="breakCount">FB — • YT — • TikTok —</div>
+  </div>
+
+  <section class="card" id="formCard">
+    <h2>I-paste ang video link</h2>
+    <p class="sub">Kahit anong link — YouTube, TikTok o Facebook. Auto-detect namin kung saan galing.</p>
+
+    <label for="urlInput">Video Link</label>
+    <textarea id="urlInput" placeholder="Hal. https://www.youtube.com/watch?v=… o https://vt.tiktok.com/… o https://www.facebook.com/reel/…" inputmode="url"></textarea>
+
+    <div class="badge-row">
+      <span class="badge" id="platformBadge"><span class="dot"></span><span id="badgeText"></span></span>
+      <span class="badge-hint" id="badgeHint">Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.</span>
+    </div>
+
+    <div id="fbQualityWrap" style="display:none">
+      <label>Video Quality / Format</label>
+      <div class="quality" id="qualityPicker">
+        <label><input type="radio" name="quality" value="best" checked> Best</label>
+        <label><input type="radio" name="quality" value="1080p"> 1080p</label>
+        <label><input type="radio" name="quality" value="720p"> 720p</label>
+        <label><input type="radio" name="quality" value="360p"> 360p</label>
+        <label><input type="radio" name="quality" value="worst"> Low Quality</label>
+        <label><input type="radio" name="quality" value="mp3"> Audio (MP3)</label>
+      </div>
+      <p class="note" id="fbQualityNote" style="display:none"></p>
+    </div>
+
+    <div id="ytFormatWrap" style="display:none">
+      <label>Format</label>
+      <div class="quality" id="ytFormatPicker">
+        <label><input type="radio" name="ytformat" value="mp3" checked> 🎵 MP3 (Audio)</label>
+        <label><input type="radio" name="ytformat" value="mp4"> 🎬 MP4 (Video)</label>
+      </div>
+      <div id="ytQualityWrap" style="display:none; margin-top:8px">
+        <label>Video Quality</label>
+        <div class="quality" id="ytQualityPicker">
+          <label><input type="radio" name="ytquality" value="best" checked> Best</label>
+          <label><input type="radio" name="ytquality" value="1080p"> 1080p</label>
+          <label><input type="radio" name="ytquality" value="720p"> 720p</label>
+          <label><input type="radio" name="ytquality" value="360p"> 360p</label>
+        </div>
+        <p class="note" id="ytQualityNote" style="display:none"></p>
+      </div>
+    </div>
+
+    <button class="btn" id="generateBtn" type="button">⬇ Generate Download</button>
+    <div class="error" id="errorBox"></div>
+    <div class="loading" id="loadingBox"><div class="spinner"></div><span id="loadingText">Kinukuha ang video…</span></div>
+
+    <div class="chips">
+      <button class="chip" type="button" data-demo="youtube">▶ YouTube</button>
+      <button class="chip" type="button" data-demo="tiktok">♪ TikTok</button>
+      <button class="chip" type="button" data-demo="facebook">f Facebook</button>
+    </div>
+  </section>
+
+  <!-- YouTube result: thumbnail + title + MP3/MP4 download (tulad ng YT4U, + MP4) -->
+  <section class="card result" id="resultYoutube">
+    <img class="thumb" id="ytThumb" alt="Video thumbnail">
+    <h3 id="ytTitle"></h3>
+    <p class="meta" id="ytMeta">YouTube • MP3 format</p>
+    <a class="btn" id="ytDownloadBtn" href="#" download style="display:block; text-align:center; text-decoration:none;">⬇ Download MP3</a>
+    <p class="note" id="ytFileName"></p>
+    <button class="btn ghost" type="button" data-reset>↺ Generate another</button>
+  </section>
+
+  <!-- TikTok result: nadedetect kung VIDEO, PHOTO slideshow, o MUSIC -->
+  <section class="card result" id="resultTiktok">
+    <div class="author">
+      <img id="ttAvatar" alt="Author avatar">
+      <div>
+        <div class="name" id="ttNickname"></div>
+        <div class="handle" id="ttHandle"></div>
+      </div>
+    </div>
+    <p class="caption" id="ttCaption"></p>
+    <div class="stats" id="ttStats"></div>
+    <p class="meta" id="ttTypeBadge"></p>
+    <video id="ttVideo" controls playsinline preload="metadata"></video>
+    <div id="ttPhotoBox" style="display:none">
+      <img class="thumb" id="ttMainPhoto" alt="TikTok photo">
+      <div class="gallery" id="ttGallery"></div>
+      <p class="note" id="ttPhotoNote"></p>
+      <button class="btn" id="ttDownloadAllPhotos" type="button">⬇ Download All Photos</button>
+    </div>
+    <div id="ttMusicBox" class="music-box" style="display:none">
+      <div class="mrow">
+        <img id="ttMusicCover" alt="Music cover">
+        <div>
+          <div class="name" id="ttMusicTitle"></div>
+          <div class="handle" id="ttMusicAuthor"></div>
+        </div>
+      </div>
+      <audio id="ttAudioPlayer" controls preload="metadata"></audio>
+      <a class="btn" id="ttAudio" href="#" download>♪ Download Audio</a>
+    </div>
+    <div class="dl-grid" id="ttVideoBtns">
+      <a class="btn wide" id="ttNoWm" href="#" download style="text-align:center; text-decoration:none;">⬇ No Watermark</a>
+      <a class="btn" id="ttHd" href="#" download style="text-align:center; text-decoration:none;">HD Quality</a>
+      <a class="btn" id="ttWm" href="#" download style="text-align:center; text-decoration:none;">With Watermark</a>
+      <a class="btn wide" id="ttSlideshow" href="#" download style="text-align:center; text-decoration:none; display:none;">▶ Slideshow Video</a>
+    </div>
+    <button class="btn ghost" type="button" data-reset>↺ Generate another</button>
+  </section>
+
+  <!-- Facebook result: thumbnail + info + quality picker + download (tulad ng FBDL4U) -->
+  <section class="card result" id="resultFacebook">
+    <img class="thumb" id="fbThumb" alt="Video thumbnail">
+    <h3 id="fbTitle"></h3>
+    <p class="meta" id="fbMeta"></p>
+    <button class="btn" id="fbDownloadBtn" type="button">⬇ Download Video</button>
+    <p class="note">Mada-download bilang file sa phone mo.</p>
+    <button class="btn ghost" type="button" data-reset>↺ Generate another</button>
+  </section>
+
+  <footer>
+    JepongDevxyz AllDL — pinagsama ang FBDL4U, YT4U at UDLTIKVIDZ sa isang app.<br>
+    YouTube, TikTok at Facebook links lang ang suportado.<br>
+    <a href="/disclaimer.html">Disclaimer</a> • <a href="/terms.html">Terms of Service</a> • <a href="/privacy.html">Privacy Policy</a>
+  </footer>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+// ---- Helpers (parehong logic sa server — api/download.js) ----
+function extractUrlFromText(text) {
+  if (!text) return '';
+  var m = String(text).match(/https?:\/\/[^\s"'<>]+/i);
+  return m ? m[0].replace(/[.,;:!?)]+$/, '') : '';
+}
+function detectPlatform(rawUrl) {
+  var url = extractUrlFromText(rawUrl || '');
+  if (!url) return null;
+  var host = '';
+  try { host = new URL(url).hostname.toLowerCase().replace(/^www\./, ''); }
+  catch (e) { return null; }
+  if (host === 'youtube.com' || host === 'youtu.be' || host === 'music.youtube.com' || host === 'm.youtube.com') return 'youtube';
+  if (host === 'tiktok.com' || host === 'vt.tiktok.com' || host === 'vm.tiktok.com') return 'tiktok';
+  if (host === 'facebook.com' || host === 'fb.com' || host === 'fb.watch' || host === 'm.facebook.com' || host === 'web.facebook.com') return 'facebook';
+  return null;
+}
+function extractYouTubeID(url) {
+  var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  var match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function fmtNum(n) {
+  n = Number(n) || 0;
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+}
+function fmtDuration(d) {
+  if (d == null || d === '') return '';
+  if (typeof d === 'number') {
+    var m = Math.floor(d / 60), s = Math.floor(d % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+  return String(d);
+}
+function safeFileName(name, ext) {
+  var base = String(name || 'video').replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 80) || 'video';
+  return base + '.' + ext;
+}
+
+// ---- Toast (modern, walang native dialog) ----
+var toastTimer = null;
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2600);
+}
+
+// ---- Theme (dark/light, CSS variables lang) ----
+var root = document.documentElement;
+var themeBtn = document.getElementById('themeBtn');
+function applyTheme(theme) {
+  root.setAttribute('data-theme', theme);
+  themeBtn.textContent = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
+  try { localStorage.setItem('alldl-theme', theme); } catch (e) {}
+}
+var savedTheme = null;
+try { savedTheme = localStorage.getItem('alldl-theme'); } catch (e) {}
+applyTheme(savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+themeBtn.addEventListener('click', function () {
+  applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+// ---- Counter: PER PLATFORM ang lalabas (flow ni Jepong) ----
+// YT link -> YouTube counter. FB link -> Facebook counter.
+// TikTok link -> TikTok counter. Walang link -> Total Downloads.
+// Ang `count` galing sa /api/counter ay laging yung counter ng
+// platform na hiningi (tingnan ang api/counter.js).
+var PLATFORM_COUNTER_LABEL = { youtube: 'YouTube Downloads', tiktok: 'TikTok Downloads', facebook: 'Facebook Downloads' };
+var currentCounterPlatform = null; // null = total ang pinapakita
+
+function renderCounter(data) {
+  var total = document.getElementById('totalCount');
+  var label = document.getElementById('counterLabel');
+  var brk = document.getElementById('breakCount');
+  if (!data) return;
+  if (data.platform && PLATFORM_COUNTER_LABEL[data.platform]) {
+    // May platform na pinaste: counter NUNG platform na yun ang bida.
+    label.textContent = PLATFORM_COUNTER_LABEL[data.platform];
+    total.textContent = fmtNum(data.count);
+    var all = (data.total != null) ? data.total
+      : ((data.breakdown ? (data.breakdown.facebook + data.breakdown.youtube + data.breakdown.tiktok) : data.count));
+    brk.textContent = 'Total sa lahat: ' + fmtNum(all);
+  } else {
+    label.textContent = 'Total Downloads';
+    total.textContent = fmtNum(data.count);
+    if (data.breakdown) {
+      brk.textContent = 'FB ' + fmtNum(data.breakdown.facebook) + ' • YT ' + fmtNum(data.breakdown.youtube) + ' • TikTok ' + fmtNum(data.breakdown.tiktok);
+    }
+  }
+}
+async function loadCounter() {
+  try {
+    var res = await fetch('/api/counter');
+    renderCounter(await res.json());
+  } catch (e) { /* mananatiling "—" kung down ang counter */ }
+}
+async function loadPlatformCounter(platform) {
+  // Kapag nagbago lang ang platform, saka lang mag-fetch — para hindi
+  // mag-spam ng request sa bawat letra habang nagta-type.
+  if (currentCounterPlatform === platform) return;
+  currentCounterPlatform = platform;
+  if (!platform) { loadCounter(); return; }
+  try {
+    var res = await fetch('/api/counter?platform=' + platform);
+    renderCounter(await res.json());
+  } catch (e) { /* mananatiling dati kung down ang counter */ }
+}
+loadCounter();
+
+// ---- Elements ----
+var urlInput = document.getElementById('urlInput');
+var badge = document.getElementById('platformBadge');
+var badgeText = document.getElementById('badgeText');
+var badgeHint = document.getElementById('badgeHint');
+var fbQualityWrap = document.getElementById('fbQualityWrap');
+var ytFormatWrap = document.getElementById('ytFormatWrap');
+var ytQualityWrap = document.getElementById('ytQualityWrap');
+var errorBox = document.getElementById('errorBox');
+var loadingBox = document.getElementById('loadingBox');
+var loadingText = document.getElementById('loadingText');
+var generateBtn = document.getElementById('generateBtn');
+
+var PLATFORM_LABEL = { youtube: 'YouTube', tiktok: 'TikTok', facebook: 'Facebook' };
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.add('show');
+}
+function hideError() { errorBox.classList.remove('show'); }
+function hideResults() {
+  document.querySelectorAll('.result').forEach(function (el) { el.classList.remove('show'); });
+}
+function resetAll() {
+  urlInput.value = '';
+  hideError();
+  hideResults();
+  badge.classList.remove('show', 'yt', 'tt', 'fb', 'bad');
+  badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.';
+  fbQualityWrap.style.display = 'none';
+  ytFormatWrap.style.display = 'none';
+  ytQualityWrap.style.display = 'none';
+  loadPlatformCounter(null); // balik sa Total Downloads
+  document.getElementById('formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  urlInput.focus();
+}
+document.querySelectorAll('[data-reset]').forEach(function (btn) {
+  btn.addEventListener('click', resetAll);
+});
+
+// Auto-detect habang nagta-type / nagpa-paste
+urlInput.addEventListener('input', function () {
+  var val = urlInput.value.trim();
+  hideError();
+  if (!val) {
+    badge.classList.remove('show', 'yt', 'tt', 'fb', 'bad');
+    badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.';
+    fbQualityWrap.style.display = 'none';
+    ytFormatWrap.style.display = 'none';
+    ytQualityWrap.style.display = 'none';
+    loadPlatformCounter(null); // balik sa Total Downloads
+    resetQualityPickers();
+    return;
+  }
+  var platform = detectPlatform(val);
+  badge.classList.remove('yt', 'tt', 'fb', 'bad');
+  if (platform) {
+    badge.classList.add('show', platform === 'youtube' ? 'yt' : platform === 'tiktok' ? 'tt' : 'fb');
+    badgeText.textContent = PLATFORM_LABEL[platform] + ' link ✓';
+    badgeHint.textContent = '';
+    fbQualityWrap.style.display = platform === 'facebook' ? 'block' : 'none';
+    ytFormatWrap.style.display = platform === 'youtube' ? 'block' : 'none';
+    ytQualityWrap.style.display = platform === 'youtube' && selectedYtFormat() === 'mp4' ? 'block' : 'none';
+    if (platform === 'tiktok' && isTikTokMusicPage(val)) {
+      // Music page lang — paalala agad bago pa mag-Generate.
+      badge.classList.remove('tt');
+      badge.classList.add('bad');
+      badgeText.textContent = 'TikTok Music page ✕';
+      badgeHint.textContent = 'Music page lang yan — i-paste mo yung video na gumagamit ng sound na yan.';
+    }
+    loadPlatformCounter(platform); // counter nung platform na yan ang lalabas
+    loadFormats(extractUrlFromText(val), platform);
+  } else if (extractUrlFromText(val)) {
+    badge.classList.add('show', 'bad');
+    badgeText.textContent = 'Hindi suportado ✕';
+    badgeHint.textContent = 'YouTube, TikTok o Facebook link lang ang pwede.';
+    fbQualityWrap.style.display = 'none';
+    ytFormatWrap.style.display = 'none';
+    ytQualityWrap.style.display = 'none';
+    loadPlatformCounter(null);
+  } else {
+    badge.classList.remove('show');
+    badgeHint.textContent = 'Paste mo lang — lalabas dito kung YouTube, TikTok o Facebook yan.';
+    fbQualityWrap.style.display = 'none';
+    ytFormatWrap.style.display = 'none';
+    ytQualityWrap.style.display = 'none';
+    loadPlatformCounter(null);
+  }
+});
+
+// YouTube format: MP4 lang ang may quality picker.
+document.querySelectorAll('input[name="ytformat"]').forEach(function (r) {
+  r.addEventListener('change', function () {
+    ytQualityWrap.style.display = selectedYtFormat() === 'mp4' ? 'block' : 'none';
+    if (selectedYtFormat() === 'mp4') {
+      loadFormats(extractUrlFromText(urlInput.value), 'youtube');
+    } else {
+      setQualityNote('youtube', '');
+    }
+  });
+});
+
+// Sample chips — naglalagay lang ng halimbawang domain para makita ang badge
+document.querySelectorAll('.chip[data-demo]').forEach(function (chip) {
+  chip.addEventListener('click', function () {
+    var demo = {
+      youtube: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      tiktok: 'https://www.tiktok.com/@tiktok/video/7223723522508225798',
+      facebook: 'https://www.facebook.com/reel/1234567890123456'
+    }[chip.getAttribute('data-demo')];
+    urlInput.value = demo;
+    urlInput.dispatchEvent(new Event('input'));
+    toast('Halimbawang link lang yan — palitan mo ng sarili mong link 🙂');
+  });
+});
+
+function selectedQuality() {
+  var checked = document.querySelector('input[name="quality"]:checked');
+  return checked ? checked.value : 'best';
+}
+function selectedYtFormat() {
+  var checked = document.querySelector('input[name="ytformat"]:checked');
+  return checked ? checked.value : 'mp3';
+}
+function selectedYtQuality() {
+  var checked = document.querySelector('input[name="ytquality"]:checked');
+  return checked ? checked.value : 'best';
+}
+
+// ---- Available resolutions: ipakita lang ang totoong meron ----
+// Kinukuha sa /api/formats pag nag-paste (YouTube MP4 at Facebook
+// lang). Pag bumalik ang listahan, yun lang ang ipapakita sa picker
+// — hindi na lalabas yung 1080p/720p kung 360p lang talaga ang meron.
+// Kapag hindi ma-check (error), mananatili ang static na options.
+var formatsCache = {}; // url -> buong /api/formats response
+var formatsLoading = '';
+var fbQualityHtml = document.getElementById('qualityPicker').innerHTML;
+var ytQualityHtml = document.getElementById('ytQualityPicker').innerHTML;
+
+function qualityNoteEl(platform) {
+  return platform === 'facebook'
+    ? document.getElementById('fbQualityNote')
+    : document.getElementById('ytQualityNote');
+}
+
+function setQualityNote(platform, text) {
+  var el = qualityNoteEl(platform);
+  if (!el) return;
+  if (text) { el.textContent = text; el.style.display = 'block'; }
+  else { el.textContent = ''; el.style.display = 'none'; }
+}
+
+function formatsNote(available) {
+  var res = available.filter(function (q) { return q !== 'best'; });
+  if (!res.length) return 'Available: Best lang ang pwede dito.';
+  return 'Available: ' + res.join(', ') + '.';
+}
+
+// Kailangan ba ng server-side merge ang quality na ito? Galing sa
+// /api/formats (merged_qualities). Pag walang formats data (hindi
+// ma-check), ang 1080p/720p/Best ng YouTube MP4 ay i-merge na lang —
+// yun ang sigurado, at yung merge endpoint mismo ang magfa-fallback
+// sa direktang link pag kailangan (hal. bot-blocked).
+function qualityNeedsMerge(url, quality) {
+  var cached = formatsCache[url];
+  if (cached && Array.isArray(cached.merged_qualities)) {
+    return cached.merged_qualities.indexOf(quality) !== -1;
+  }
+  return quality === 'best' || quality === '4320p' || quality === '2160p' || quality === '1080p' || quality === '720p';
+}
+
+function renderResolutions(platform, available) {
+  var picker, name, extras;
+  if (platform === 'facebook') {
+    picker = document.getElementById('qualityPicker');
+    name = 'quality';
+    extras = [
+      { value: 'worst', label: 'Low Quality' },
+      { value: 'mp3', label: 'Audio (MP3)' },
+    ];
+  } else {
+    picker = document.getElementById('ytQualityPicker');
+    name = 'ytquality';
+    extras = [];
+  }
+  if (!picker) return;
+  var prev = null;
+  var checked = picker.querySelector('input:checked');
+  if (checked) prev = checked.value;
+  var sel = prev;
+  var isExtra = extras.some(function (e) { return e.value === sel; });
+  if (!sel || (available.indexOf(sel) === -1 && !isExtra)) sel = 'best';
+  var html = '';
+  available.forEach(function (q) {
+    var label = q === 'best' ? 'Best' : q;
+    html += '<label><input type="radio" name="' + name + '" value="' + q + '"' +
+      (q === sel ? ' checked' : '') + '> ' + label + '</label>';
+  });
+  extras.forEach(function (e) {
+    html += '<label><input type="radio" name="' + name + '" value="' + e.value + '"' +
+      (e.value === sel ? ' checked' : '') + '> ' + e.label + '</label>';
+  });
+  picker.innerHTML = html;
+}
+
+function resetQualityPickers() {
+  document.getElementById('qualityPicker').innerHTML = fbQualityHtml;
+  document.getElementById('ytQualityPicker').innerHTML = ytQualityHtml;
+  setQualityNote('facebook', '');
+  setQualityNote('youtube', '');
+}
+
+async function loadFormats(url, platform) {
+  if (!url || (platform !== 'youtube' && platform !== 'facebook')) return;
+  if (platform === 'youtube' && selectedYtFormat() !== 'mp4') return;
+  if (formatsCache[url]) {
+    renderResolutions(platform, formatsCache[url].available);
+    setQualityNote(platform, formatsNote(formatsCache[url].available));
+    return;
+  }
+  if (formatsLoading === url) return;
+  formatsLoading = url;
+  setQualityNote(platform, 'Chine-check ang available na resolution…');
+  try {
+    var res = await fetch('/api/formats?url=' + encodeURIComponent(url));
+    var data = await res.json().catch(function () { return null; });
+    if (!res.ok || !data || !Array.isArray(data.available) || !data.available.length) {
+      throw new Error('no formats');
+    }
+    formatsCache[url] = data;
+    // Baka nagbago na ang paste habang naglo-load — yung kasalukuyang
+    // URL lang ang i-render.
+    if (extractUrlFromText(urlInput.value) === url) {
+      renderResolutions(platform, data.available);
+      setQualityNote(platform, formatsNote(data.available));
+    }
+  } catch (e) {
+    // Fallback: manatili ang static na options, walang mawawala.
+    if (extractUrlFromText(urlInput.value) === url) {
+      setQualityNote(platform, 'Hindi ma-check ang available na resolution — lahat ng option pinapakita.');
+    }
+  } finally {
+    if (formatsLoading === url) formatsLoading = '';
+  }
+}
+// TikTok music page (/music/...) — hindi kayang i-resolve (tingnan ang
+// api/download.js). Iba ang mensahe nito kaysa sa generic na error.
+function isTikTokMusicPage(rawUrl) {
+  var url = extractUrlFromText(rawUrl || '');
+  if (!url) return false;
+  try {
+    var u = new URL(url);
+    return u.hostname.replace(/^www\./, '') === 'tiktok.com' &&
+      u.pathname.toLowerCase().indexOf('/music/') === 0;
+  } catch (e) { return false; }
+}
+// Cross-origin downloads (TikTok CDN): fetch bilang blob para gumana
+// ang filename — tulad ng original na TT app.
+async function downloadViaBlob(url, filename, btn) {
+  var label = btn ? btn.innerHTML : '';
+  try {
+    if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Downloading…'; }
+    var res = await fetch(url);
+    if (!res.ok) throw new Error('fetch failed');
+    var blob = await res.blob();
+    var blobUrl = window.URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(blobUrl);
+    document.body.removeChild(a);
+    toast('Na-download na 🙂');
+  } catch (e) {
+    window.open(url, '_blank');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = label; }
+  }
+}
+
+// FB backend (Render) — dito dumidiretso ang merge request para sa
+// tunay na resolution; CORS * kaya pwedeng tawagin ng browser diretso.
+var FB_BACKEND = 'https://jepong-devxyz-fb-dl4u.vercel.app';
+
+// ---- Generate ----
+generateBtn.addEventListener('click', async function () {
+  var raw = urlInput.value;
+  var url = extractUrlFromText(raw);
+  hideError();
+  hideResults();
+  if (!url) { showError('Maglagay ng valid na video link.'); return; }
+  var platform = detectPlatform(url);
+  if (!platform) {
+    showError('Hindi suportado ang link na yan. YouTube, TikTok o Facebook link lang.');
+    return;
+  }
+
+  generateBtn.disabled = true;
+  var ytFmt = selectedYtFormat();
+  var ytQuality = selectedYtQuality();
+  loadingText.textContent = platform === 'youtube' ? (ytFmt === 'mp4' ? 'Kinukuha ang MP4…' : 'Kinukuha ang MP3…') :
+    platform === 'tiktok' ? 'Kinukuha ang TikTok video…' : 'Kinukuha ang Facebook video…';
+  loadingBox.classList.add('show');
+
+  try {
+    if (platform === 'youtube' && ytFmt === 'mp4' && qualityNeedsMerge(url, ytQuality)) {
+      // Tunay na resolution: i-merge sa server (video + audio), at
+      // diretso ang file mismo ang babalik — walang googlevideo link
+      // dito kasi hiwalay ang DASH streams ng YouTube.
+      loadingText.textContent = 'Mino-merge ang ' + ytQuality + '… medyo matatagal (mga 30–60 segundo).';
+      var mRes = await fetch(FB_BACKEND + '/api/download-merged', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url, quality: ytQuality })
+      });
+      var mType = mRes.headers.get('content-type') || '';
+      if (mType.indexOf('application/json') !== -1) {
+        var mData = await mRes.json().catch(function () { return {}; });
+        if (!mRes.ok || mData.error || mData.detail) {
+          showError(mData.error || mData.detail || 'Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
+          return;
+        }
+        if (mData.download_url) {
+          // Fallback: single-file link lang ang kaya (hal. bot-blocked)
+          // — diretso pa rin sa normal na MP4 result.
+          var mTitle = (mData.video_info && mData.video_info.title) || 'YouTube Video';
+          renderYoutube({
+            platform: 'youtube', format: 'mp4', title: mTitle, downloadUrl: mData.download_url,
+            filename: (mTitle.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4'
+          }, url);
+        } else {
+          showError('Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
+          return;
+        }
+      } else if (mRes.ok) {
+        var blob = await mRes.blob();
+        var blobUrl = window.URL.createObjectURL(blob);
+        var disp = mRes.headers.get('content-disposition') || '';
+        var m = disp.match(/filename="?([^";]+)"?/);
+        var fname = m ? m[1] : 'video.mp4';
+        renderYoutube({
+          platform: 'youtube', format: 'mp4',
+          title: fname.replace(/\.mp4$/i, ''),
+          downloadUrl: blobUrl, filename: fname, direct: true
+        }, url);
+      } else {
+        showError('Hindi ma-merge ang video na ito. Subukan ang 360p o MP3.');
+        return;
+      }
+    } else {
+      var res = await fetch('/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: url,
+          quality: platform === 'youtube' ? ytQuality : selectedQuality(),
+          format: platform === 'youtube' ? ytFmt : 'mp3'
+        })
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok || data.error) {
+        showError(data.error || 'Hindi ma-process ang video ngayon. Subukan ulit mamaya.');
+        return;
+      }
+
+      if (platform === 'youtube') renderYoutube(data, url);
+      else if (platform === 'tiktok') renderTiktok(data);
+      else renderFacebook(data);
+    }
+
+    // I-increment ang counter ng platform na to (fire-and-forget).
+    try {
+      var cRes = await fetch('/api/counter?platform=' + platform, { method: 'POST' });
+      renderCounter(await cRes.json());
+    } catch (e) {}
+    toast('Ayos! Piliin mo na ang download mo 🙂');
+  } catch (e) {
+    showError('Hindi ma-process ang video ngayon. Subukan ulit mamaya.');
+  } finally {
+    loadingBox.classList.remove('show');
+    generateBtn.disabled = false;
+  }
+});
+
+// ---- Renderers (lahat ng feature ng originals, walang tinanggal) ----
+function renderYoutube(data, url) {
+  var id = extractYouTubeID(url);
+  var thumb = document.getElementById('ytThumb');
+  thumb.src = id ? 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg' : '';
+  thumb.style.display = id ? 'block' : 'none';
+  document.getElementById('ytTitle').textContent = data.title || 'YouTube Video';
+  var isMp4 = data.format === 'mp4';
+  document.getElementById('ytMeta').textContent = isMp4 ? 'YouTube • MP4 video' : 'YouTube • MP3 format';
+  var btn = document.getElementById('ytDownloadBtn');
+  if (isMp4) {
+    if (data.direct) {
+      // Merged file na — blob URL mismo, diretso ang download.
+      btn.href = data.downloadUrl;
+    } else {
+      // MP4 galing sa googlevideo — dumaan sa proxy para tama ang filename.
+      btn.href = '/api/proxy-download?url=' + encodeURIComponent(data.downloadUrl) +
+        '&filename=' + encodeURIComponent(data.filename || 'video.mp4');
+    }
+    btn.textContent = '⬇ Download MP4';
+    btn.setAttribute('download', data.filename || 'video.mp4');
+  } else {
+    btn.href = data.downloadUrl;
+    btn.textContent = '⬇ Download MP3';
+    btn.setAttribute('download', data.filename || 'audio.mp3');
+  }
+  document.getElementById('ytFileName').textContent = data.filename || '';
+  document.getElementById('resultYoutube').classList.add('show');
+  document.getElementById('resultYoutube').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderTiktok(data) {
+  var item = data.item || {};
+  var author = item.author || {};
+  var avatar = document.getElementById('ttAvatar');
+  avatar.src = author.avatar || '';
+  avatar.style.display = author.avatar ? 'block' : 'none';
+  document.getElementById('ttNickname').textContent = author.nickname || author.name || 'TikTok user';
+  document.getElementById('ttHandle').textContent = author.unique_id ? '@' + author.unique_id : '';
+  document.getElementById('ttCaption').textContent = item.title || item.desc || '';
+
+  var stats = [];
+  if (item.play_count != null) stats.push('▶ ' + fmtNum(item.play_count) + ' plays');
+  if (item.digg_count != null) stats.push('♥ ' + fmtNum(item.digg_count) + ' likes');
+  if (item.share_count != null) stats.push('↗ ' + fmtNum(item.share_count) + ' shares');
+  document.getElementById('ttStats').textContent = stats.join('   ');
+
+  // ---- Anong klaseng content? (gamit ang flags galing sa server) ----
+  var images = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
+  var hasVideo = Boolean(data.hasVideo != null ? data.hasVideo : (item.play || item.hdplay));
+  var hasPhotos = Boolean(data.hasPhotos != null ? data.hasPhotos : images.length > 0);
+  var music = data.music || null;
+  var musicUrl = music ? music.play : ((item.music_info && item.music_info.play) || item.music || '');
+  var hasMusic = Boolean(data.hasMusic != null ? data.hasMusic : musicUrl);
+  var type = data.contentType || (hasPhotos ? 'photo' : hasVideo ? 'video' : hasMusic ? 'music' : 'unknown');
+  var badgeParts = [];
+  if (type === 'photo') badgeParts.push('📷 Photo • ' + images.length + ' photos');
+  else if (type === 'video') badgeParts.push('🎬 Video');
+  else if (type === 'music') badgeParts.push('🎵 Music');
+  if (hasMusic && type !== 'music') badgeParts.push('+ 🎵 Music');
+  document.getElementById('ttTypeBadge').textContent = badgeParts.join('  •  ');
+
+  // ---- VIDEO: player + No Watermark / HD / Watermark ----
+  var video = document.getElementById('ttVideo');
+  var videoBtns = document.getElementById('ttVideoBtns');
+  var slideshowBtn = document.getElementById('ttSlideshow');
+  var stamp = Date.now();
+  if (type === 'video' && hasVideo) {
+    video.style.display = 'block';
+    video.src = item.play || item.hdplay || '';
+    video.load();
+    videoBtns.style.display = 'grid';
+    slideshowBtn.style.display = 'none';
+  } else {
+    video.style.display = 'none';
+    video.removeAttribute('src');
+    video.load();
+    // Photo post: may slideshow video pa rin — alok bilang download.
+    if (hasVideo) {
+      videoBtns.style.display = 'grid';
+      slideshowBtn.style.display = '';
+    } else {
+      videoBtns.style.display = 'none';
+    }
+  }
+  function wireBlob(btn, url, filename) {
+    // Click handler lang — ang visibility, hiwalay na inaayos sa baba,
+    // para hindi ma-override ng wiring ang pagtago ng button.
+    if (!btn) return;
+    btn.href = url || '#';
+    btn.onclick = function (e) {
+      e.preventDefault();
+      if (url) downloadViaBlob(url, filename, btn);
+    };
+  }
+  wireBlob(document.getElementById('ttNoWm'), item.play || item.hdplay || '', 'tiktok_nowm_' + stamp + '.mp4');
+  wireBlob(document.getElementById('ttHd'), item.hdplay || item.play || '', 'tiktok_hd_' + stamp + '.mp4');
+  wireBlob(document.getElementById('ttWm'), item.wmplay || '', 'tiktok_wm_' + stamp + '.mp4');
+  wireBlob(slideshowBtn, item.play || item.hdplay || '', 'tiktok_slideshow_' + stamp + '.mp4');
+  document.getElementById('ttWm').style.display = item.wmplay ? '' : 'none';
+  // Slideshow button: photo post lang na may video.
+  slideshowBtn.style.display = (type !== 'video' && hasVideo) ? '' : 'none';
+
+  // ---- PHOTOS: gallery ng LAHAT ng photos, tap para palakihin ----
+  var photoBox = document.getElementById('ttPhotoBox');
+  var gallery = document.getElementById('ttGallery');
+  var mainPhoto = document.getElementById('ttMainPhoto');
+  var photoNote = document.getElementById('ttPhotoNote');
+  var downloadAllBtn = document.getElementById('ttDownloadAllPhotos');
+  gallery.innerHTML = '';
+  if (hasPhotos) {
+    photoBox.style.display = 'block';
+    mainPhoto.src = images[0];
+    photoNote.textContent = 'Photo slideshow ito — ' + images.length + ' photos. I-tap ang isa para palakihin.';
+    images.forEach(function (src, i) {
+      var t = document.createElement('img');
+      t.src = src;
+      t.alt = 'Photo ' + (i + 1);
+      if (i === 0) t.classList.add('active');
+      t.onclick = function () {
+        mainPhoto.src = src;
+        gallery.querySelectorAll('img').forEach(function (el) { el.classList.remove('active'); });
+        t.classList.add('active');
+      };
+      gallery.appendChild(t);
+    });
+    downloadAllBtn.onclick = async function () {
+      downloadAllBtn.disabled = true;
+      downloadAllBtn.textContent = '⏳ Downloading photos…';
+      for (var i = 0; i < images.length; i++) {
+        await downloadViaBlob(images[i], 'tiktok_photo_' + (i + 1) + '_' + stamp + '.jpg', null);
+      }
+      downloadAllBtn.disabled = false;
+      downloadAllBtn.textContent = '⬇ Download All Photos';
+      toast('Na-download na ang ' + images.length + ' photos 🙂');
+    };
+  } else {
+    photoBox.style.display = 'none';
+  }
+
+  // ---- MUSIC: audio player + track info + Download Audio ----
+  var musicBox = document.getElementById('ttMusicBox');
+  var audioPlayer = document.getElementById('ttAudioPlayer');
+  var audioBtn = document.getElementById('ttAudio');
+  if (hasMusic) {
+    musicBox.style.display = 'block';
+    var mTitle = (music && music.title) || (item.music_info && item.music_info.title) || 'TikTok sound';
+    var mAuthor = (music && music.author) || (item.music_info && item.music_info.author) || '';
+    var mCover = (music && music.cover) || (item.music_info && (item.music_info.cover || item.music_info.cover_hd)) || item.cover || '';
+    document.getElementById('ttMusicTitle').textContent = '♪ ' + mTitle;
+    document.getElementById('ttMusicAuthor').textContent = mAuthor;
+    var coverImg = document.getElementById('ttMusicCover');
+    coverImg.src = mCover;
+    coverImg.style.display = mCover ? 'block' : 'none';
+    audioPlayer.src = musicUrl;
+    audioPlayer.load();
+    wireBlob(audioBtn, musicUrl, 'tiktok_audio_' + stamp + '.mp3');
+  } else {
+    musicBox.style.display = 'none';
+    audioPlayer.removeAttribute('src');
+    audioPlayer.load();
+  }
+
+  document.getElementById('resultTiktok').classList.add('show');
+  document.getElementById('resultTiktok').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+var fbDownloadUrl = '';
+function renderFacebook(data) {
+  var info = data.video_info || {};
+  fbDownloadUrl = data.download_url || '';
+  var thumb = document.getElementById('fbThumb');
+  thumb.src = info.thumbnail || '';
+  thumb.style.display = info.thumbnail ? 'block' : 'none';
+  document.getElementById('fbTitle').textContent = info.title || 'Facebook Video';
+  var parts = [];
+  if (info.duration) parts.push('⏱ ' + fmtDuration(info.duration));
+  if (info.uploader) parts.push('👤 ' + info.uploader);
+  if (info.view_count != null) parts.push('👁 ' + fmtNum(info.view_count) + ' views');
+  document.getElementById('fbMeta').textContent = parts.join('  •  ');
+  document.getElementById('resultFacebook').classList.add('show');
+  document.getElementById('resultFacebook').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('fbDownloadBtn').addEventListener('click', function () {
+  if (!fbDownloadUrl) { showError('Wala pang video na nakuha. I-generate mo muna.'); return; }
+  var quality = selectedQuality();
+  var ext = quality === 'mp3' ? 'mp3' : 'mp4';
+  var title = document.getElementById('fbTitle').textContent || 'video';
+  var proxyUrl = '/api/proxy-download?url=' + encodeURIComponent(fbDownloadUrl) +
+    '&filename=' + encodeURIComponent(safeFileName(title, ext));
+  window.location.href = proxyUrl;
+});
+</script>
+</body>
+</html>
