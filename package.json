@@ -1,1 +1,1 @@
-{"description":"JepongDevxyz AllDL — isang downloader para sa YouTube, TikTok at Facebook","engines":{"node":">=18"},"name":"jepongdevxyz-alldl","private":true,"scripts":{"test":"node tests/detect.test.mjs && node tests/formats.test.mjs"},"type":"module","version":"1.0.0"}
+{"description":"JepongDevxyz AllDL — isang downloader para sa YouTube, TikTok, Facebook at Reddit","engines":{"node":">=18"},"name":"jepongdevxyz-alldl","private":true,"scripts":{"test":"node tests/detect.test.mjs && node tests/formats.test.mjs"},"type":"module","version":"1.0.0"}
