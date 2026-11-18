@@ -9,6 +9,7 @@
 import { detectPlatform, extractUrlFromText } from './download.js';
 
 const FB_BACKEND = 'https://jepong-devxyz-fb-dl4u.vercel.app';
+
 // v1.1: ang raw yt-dlp error (bot check + wiki links) ay hindi na
 // ipinapakita sa user — maikling Tagalog message na lang.
 function friendlyUpstreamError(msg) {
@@ -59,12 +60,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Maglagay ng valid na video link.' });
     }
     const platform = detectPlatform(url);
-    if (!platform || platform === 'tiktok') {
+    if (!platform || (platform !== 'youtube' && platform !== 'facebook')) {
       return res.status(400).json({
         error:
           platform === 'tiktok'
             ? 'Walang resolution picker ang TikTok dito.'
-            : 'YouTube o Facebook link lang ang pwede dito.',
+            : platform === 'reddit' || platform === 'x'
+              ? 'Walang resolution picker ang ' + (platform === 'reddit' ? 'Reddit' : 'X') + ' dito.'
+              : 'YouTube o Facebook link lang ang pwede dito.',
       });
     }
 

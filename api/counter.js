@@ -5,9 +5,11 @@
 //   - TikTok link -> TIKTOK counter ang lalabas
 //   - Reddit link -> REDDIT counter ang lalabas (sariling key
 //     "counter:reddit" sa FB backend — hindi ni-reset ang FB count)
-// Kaya GET/POST ?platform=youtube|facebook|tiktok|reddit -> ang `count` na
+//   - X link -> X counter ang lalabas (sariling key "counter:x"
+//     sa FB backend)
+// Kaya GET/POST ?platform=youtube|facebook|tiktok|reddit|x -> ang `count` na
 // ibabalik ay yung counter NG PLATFORM NA YUN (hindi ang pinagsama).
-// Walang ?platform -> total ng apat (default view bago mag-paste).
+// Walang ?platform -> total ng lima (default view bago mag-paste).
 // Pinagkukunan pa rin ang tatlong original na counter:
 //   Facebook -> GET/POST {FB}/api/counter          -> { count }
 //   YouTube  -> GET/POST {YT}/api/counter          -> { count }
@@ -15,8 +17,9 @@
 //              (walang POST counter ang TT — tumataas na siya mismo
 //               tuwing may successful /api/resolve, kaya GET lang dito)
 //   Reddit   -> GET/POST {FB}/api/counter?platform=reddit -> { count }
-// GET  -> { count, platform?, total, breakdown: { facebook, youtube, tiktok, reddit } }
-// POST ?platform=facebook|youtube|tiktok|reddit (o JSON { platform })
+//   X        -> GET/POST {FB}/api/counter?platform=x      -> { count }
+// GET  -> { count, platform?, total, breakdown: { facebook, youtube, tiktok, reddit, x } }
+// POST ?platform=facebook|youtube|tiktok|reddit|x (o JSON { platform })
 //     -> i-increment ang counter ng platform na yun (FB/YT/Reddit lang;
 //        TT: balik lang ang kasalukuyang total niya, kasi naka-increment
 //        na siya sa mismong resolve), tapos balik ang counter NG
@@ -32,6 +35,7 @@ const INCREMENT_ENDPOINTS = {
   facebook: `${FB_BACKEND}/api/counter`,
   youtube: `${YT_BACKEND}/api/counter`,
   reddit: `${FB_BACKEND}/api/counter?platform=reddit`,
+  x: `${FB_BACKEND}/api/counter?platform=x`,
   // tiktok: walang POST counter — sadyang wala dito.
 };
 
@@ -48,19 +52,20 @@ async function fetchCount(url, pick) {
 }
 
 async function getBreakdown() {
-  const [facebook, youtube, tiktok, reddit] = await Promise.all([
+  const [facebook, youtube, tiktok, reddit, x] = await Promise.all([
     fetchCount(`${FB_BACKEND}/api/counter`, (d) => d.count),
     fetchCount(`${YT_BACKEND}/api/counter`, (d) => d.count),
     fetchCount(`${TT_BACKEND}/api/stats`, (d) => d.total),
     fetchCount(`${FB_BACKEND}/api/counter?platform=reddit`, (d) => d.count),
+    fetchCount(`${FB_BACKEND}/api/counter?platform=x`, (d) => d.count),
   ]);
-  return { facebook, youtube, tiktok, reddit };
+  return { facebook, youtube, tiktok, reddit, x };
 }
 
-const PLATFORMS = ['facebook', 'youtube', 'tiktok', 'reddit'];
+const PLATFORMS = ['facebook', 'youtube', 'tiktok', 'reddit', 'x'];
 
 function totalOf(b) {
-  return b.facebook + b.youtube + b.tiktok + (b.reddit || 0);
+  return b.facebook + b.youtube + b.tiktok + (b.reddit || 0) + (b.x || 0);
 }
 
 // Ang ibabalik na `count` ay laging yung counter ng platform na hiningi
@@ -128,7 +133,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       count: 0,
       total: 0,
-      breakdown: { facebook: 0, youtube: 0, tiktok: 0, reddit: 0 },
+      breakdown: { facebook: 0, youtube: 0, tiktok: 0, reddit: 0, x: 0 },
     });
   }
 }

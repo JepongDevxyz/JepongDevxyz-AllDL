@@ -89,6 +89,9 @@ export function detectPlatform(rawUrl) {
   if (host === 'reddit.com' || host === 'old.reddit.com' || host === 'redd.it') {
     return 'reddit';
   }
+  if (host === 'x.com' || host === 'twitter.com' || host === 'mobile.twitter.com') {
+    return 'x';
+  }
   return null;
 }
 
@@ -388,6 +391,14 @@ export default async function handler(req, res) {
       // error lang (hindi pwedeng ibalik ang file bilang JSON).
       return res.status(400).json({
         error: 'Ang Reddit video ay dina-download sa pamamagitan ng merge — gamitin ang Generate button sa homepage.',
+      });
+    }
+    if (platform === 'x') {
+      // Ang X ay direktang MP4 mula sa server — ang frontend ang
+      // tumatawag diretso sa FB backend /api/download-merged. Dito,
+      // malinaw na error lang (hindi pwedeng ibalik ang file bilang JSON).
+      return res.status(400).json({
+        error: 'Ang X video ay dina-download sa pamamagitan ng server — gamitin ang Generate button sa homepage.',
       });
     }
     if (platform === 'tiktok') result = await handleTikTok(url);
