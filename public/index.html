@@ -246,7 +246,7 @@
   <div class="counter-card" id="counterCard">
     <div class="total" id="totalCount">—</div>
     <div class="label" id="counterLabel">Total Downloads</div>
-    <div class="break" id="breakCount">FB — • YT — • TikTok — • Reddit —</div>
+    <div class="break" id="breakCount">FB — • YT — • TikTok — • Reddit — • X —</div>
   </div>
 
   <section class="card" id="formCard">
@@ -955,6 +955,23 @@ generateBtn.addEventListener('click', async function () {
         var fname = mTitle2
           ? ((mTitle2.replace(/[\\/:*?"<>|]/g, '').trim() || 'video') + '.mp4')
           : (m ? m[1] : 'video.mp4');
+        if (!mTitle2 && !m) {
+          // Content-Disposition ay HINDI nababasa ng browser sa
+          // cross-origin fetch (CORS — hindi ito exposed header),
+          // kaya 'video.mp4' lang ang lumalabas. Buuin na lang ang
+          // filename mula sa URL mismo — kapareho ng pangalan sa server.
+          if (platform === 'x') {
+            var xfm = url.match(/(?:x\.com|twitter\.com)\/([^\/]+)\/status\/(\d+)/);
+            if (xfm) fname = 'x-' + xfm[1] + '-' + xfm[2] + '.mp4';
+          } else if (platform === 'reddit') {
+            var rfm = url.match(/reddit\.com\/r\/([^\/]+)\/comments\/([^\/\s?#]+)/);
+            if (rfm) fname = 'reddit-' + rfm[1] + '-' + rfm[2] + '.mp4';
+            else {
+              var rfm2 = url.match(/redd\.it\/([A-Za-z0-9]+)/);
+              if (rfm2) fname = 'reddit-' + rfm2[1] + '.mp4';
+            }
+          }
+        }
         if (platform === 'facebook') {
           renderFacebook({
             platform: 'facebook', status: 'success', download_url: blobUrl,
